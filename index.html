@@ -1,0 +1,2481 @@
+
+
+
+HTML
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام إدارة الطلاب والحسابات - مجمع يلملم التعليمي</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1e40af;
+    --primary-dark: #1e3a8a;
+    --accent: #d97706;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --muted: #64748b;
+  }
+  [data-theme="dark"] {
+    --primary: #3b82f6;
+    --primary-dark: #1d4ed8;
+    --accent: #f59e0b;
+    --bg: #0f172a;
+    --card: #1e293b;
+    --border: #334155;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+  body { background: var(--bg); color: var(--text); transition: background-color 0.3s, color 0.3s; }
+  
+  .card-style { background: var(--card); border: 1px solid var(--border); }
+  
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal.show { display: flex; }
+
+  .theme-toggle-btn {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 100;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  @media print {
+    header, .no-print, .theme-toggle-btn, .modal { display: none !important; }
+    body { background: white !important; color: black !important; }
+    .container, main { max-width: 100% !important; width: 100% !important; padding: 10px !important; }
+    .card-style { border: 1px solid #ccc !important; box-shadow: none !important; break-inside: avoid; }
+    #cardsView { display: grid !important; }
+    #tableView { display: block !important; }
+    .print-header { display: block !important; text-align: center; margin-bottom: 20px; }
+  }
+  .print-header { display: none; }
+
+  /* Sidebar Styles */
+  .sidebar {
+    width: 260px;
+    background: var(--card);
+    border-left: 1px solid var(--border);
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 50;
+    transition: transform 0.3s ease;
+    padding-top: 16px;
+  }
+  .sidebar.closed { transform: translateX(100%); }
+  .sidebar-content { padding: 16px; }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: right;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+  .sidebar-item:hover { transform: translateX(-3px); }
+  .main-content {
+    margin-right: 260px;
+    transition: margin 0.3s ease;
+  }
+  .main-content.expanded { margin-right: 0; }
+  .sidebar-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 60;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .sidebar-close-btn {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--text);
+  }
+  @media (max-width: 1024px) {
+    .sidebar { transform: translateX(100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main-content { margin-right: 0; }
+  }
+  @media print {
+    .sidebar, .sidebar-toggle { display: none !important; }
+    .main-content { margin-right: 0 !important; }
+  }
+</style>
+</head>
+<body class="min-h-screen pb-12">
+
+<!-- Theme Toggle Button -->
+<button class="theme-toggle-btn shadow-md hover:scale-105 transition-transform" onclick="toggleTheme()" title="تبديل الوضع">
+  <span id="themeIcon" class="text-xl">🌙</span>
+</button>
+
+<!-- 1. LOGIN SCREEN -->
+<div id="loginScreen" class="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900 bg-opacity-95 backdrop-blur-md">
+  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-200 dark:border-slate-700">
+    <div class="text-center mb-6">
+      <div class="w-20 h-20 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+        <span class="text-3xl">🏫</span>
+      </div>
+      <h2 class="text-2xl font-bold text-slate-800 dark:text-white">مجمع يلملم التعليمي</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">نظام إدارة الطلاب وتعدد الصلاحيات</p>
+    </div>
+
+    <!-- Quick Demo Accounts Switcher -->
+    <div class="mb-6 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+      <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">تسجيل سريع بحسابات تجريبية:</label>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <button onclick="fillLogin('admin', 'admin123')" class="px-2 py-1.5 bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800 hover:bg-blue-100 text-right font-medium">
+          👑 مدير النظام
+        </button>
+        <button onclick="fillLogin('vice', 'vice123')" class="px-2 py-1.5 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 text-right font-medium">
+          📋 وكيل الطلاب
+        </button>
+        <button onclick="fillLogin('counselor', 'guide123')" class="px-2 py-1.5 bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded border border-amber-200 dark:border-amber-800 hover:bg-amber-100 text-right font-medium">
+          🩺 الموجه الطلابي
+        </button>
+        <button onclick="fillLogin('teacher', 'teacher123')" class="px-2 py-1.5 bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 rounded border border-purple-200 dark:border-purple-800 hover:bg-purple-100 text-right font-medium">
+          📖 معلم / مشاهد
+        </button>
+        <button onclick="fillLogin('absence', 'absence123')" class="px-2 py-1.5 bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 rounded border border-rose-200 dark:border-rose-800 hover:bg-rose-100 text-right font-medium col-span-2">
+          📝 مسؤول الغياب
+        </button>
+      </div>
+    </div>
+
+    <form onsubmit="handleLogin(event)" class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">اسم المستخدم</label>
+        <input type="text" id="loginUsername" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">كلمة المرور</label>
+        <input type="password" id="loginPassword" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+      </div>
+      <div id="loginError" class="hidden p-3 rounded-lg bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-300 text-xs text-center font-medium">
+        اسم المستخدم أو كلمة المرور غير صحيحة!
+      </div>
+      <button type="submit" class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all">
+        دخول إلى النظام
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- 2. MAIN APPLICATION CONTENT -->
+<div id="appContainer" class="hidden">
+  
+  <!-- Sidebar Toggle for All Screens -->
+  <button class="sidebar-toggle no-print" onclick="toggleSidebar()" title="القائمة">☰</button>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar no-print">
+    <button class="sidebar-close-btn" onclick="toggleSidebar()">✕</button>
+    <div class="sidebar-content">
+      <div class="text-center mb-6 pb-4 border-b dark:border-slate-700">
+        <div class="text-2xl mb-1">🏫</div>
+        <div class="font-bold text-sm">مجمع يلملم</div>
+      </div>
+
+      <button id="viewToggle" onclick="toggleView()" class="sidebar-item bg-slate-700 hover:bg-slate-800 text-white">
+        📊 عرض جدول
+      </button>
+      <button onclick="window.print()" class="sidebar-item bg-slate-600 hover:bg-slate-700 text-white">
+        🖨️ طباعة
+      </button>
+      <button onclick="exportCSV()" class="sidebar-item bg-emerald-700 hover:bg-emerald-800 text-white">
+        تصدير CSV
+      </button>
+      <button onclick="exportJSON()" class="sidebar-item bg-teal-700 hover:bg-teal-800 text-white">
+        تصدير JSON
+      </button>
+
+      <div class="my-4 border-t dark:border-slate-700"></div>
+
+      <button id="backupBtn" onclick="exportBackup()" class="sidebar-item hidden bg-amber-600 hover:bg-amber-700 text-white">
+        💾 حفظ نسخة احتياطية
+      </button>
+      <button id="restoreBtn" onclick="document.getElementById('importFile').click()" class="sidebar-item hidden bg-slate-700 hover:bg-slate-800 text-white">
+        📂 استعادة نسخة
+      </button>
+      <input type="file" id="importFile" accept=".json" class="hidden" onchange="importBackup(event)">
+
+      <button id="addStudentBtn" onclick="openAddModal()" class="sidebar-item hidden bg-blue-700 hover:bg-blue-800 text-white">
+        ➕ إضافة طالب جديد
+      </button>
+      <button id="bulkMsgBtn" onclick="openBulkModal()" class="sidebar-item hidden bg-emerald-700 hover:bg-emerald-800 text-white">
+        📢 رسالة جماعية
+      </button>
+      <button id="absenceBtn" onclick="openAbsenceModal()" class="sidebar-item hidden bg-red-600 hover:bg-red-700 text-white">
+        📝 تسجيل الغياب
+      </button>
+      <button id="absenceReportBtn" onclick="openAbsenceReport()" class="sidebar-item hidden bg-orange-600 hover:bg-orange-700 text-white">
+        📊 تقرير الغياب
+      </button>
+      <button id="notifyAbsenteesBtn" onclick="openNotifyAbsentees()" class="sidebar-item hidden bg-pink-600 hover:bg-pink-700 text-white">
+        📩 إشعار أولياء الغائبين
+      </button>
+      <button id="templatesBtn" onclick="openTemplatesModal()" class="sidebar-item hidden bg-indigo-600 hover:bg-indigo-700 text-white">
+        📝 إدارة قوالب الرسائل
+      </button>
+      <button onclick="openTimetableModal()" class="sidebar-item bg-cyan-600 hover:bg-cyan-700 text-white">
+        📅 الجدول المدرسي
+      </button>
+
+      <div class="my-4 border-t dark:border-slate-700"></div>
+
+      <button id="manageUsersBtn" onclick="openUsersModal()" class="sidebar-item hidden bg-amber-600 hover:bg-amber-700 text-white">
+        ⚙️ إدارة الحسابات
+      </button>
+      <button onclick="handleLogout()" class="sidebar-item bg-red-600 hover:bg-red-700 text-white">
+        خروج 🚪
+      </button>
+    </div>
+  </aside>
+
+  <!-- Top Navigation & User Bar -->
+  <header class="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white shadow-lg no-print">
+    <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="bg-white/10 p-2 rounded-xl backdrop-blur-sm">
+            <span class="text-3xl">🏫</span>
+          </div>
+          <div class="text-center md:text-right">
+            <h1 class="text-lg sm:text-xl font-extrabold tracking-tight leading-tight">مجمع يلملم التعليمي</h1>
+            <p class="text-[11px] sm:text-xs text-blue-200 mt-0.5">قاعدة بيانات الطلاب ونظام إدارة الصلاحيات</p>
+            <span id="syncStatusBadge" class="mt-1 inline-block px-3 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+              ✅ البيانات متزامنة مع Google Sheets
+            </span>
+          </div>
+        </div>
+
+        <!-- User Info -->
+        <div class="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10">
+          <div class="text-right">
+            <div id="currentUserName" class="text-sm font-bold text-white">---</div>
+            <div id="currentUserRole" class="text-[11px] text-blue-200 bg-blue-950/60 px-2 py-0.5 rounded-md inline-block font-medium">---</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+    
+    <!-- Search & Filter Controls -->
+    <div class="card-style rounded-2xl p-5 mb-6 shadow-sm no-print">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">بحث باسم الطالب</label>
+          <input type="text" id="searchName" placeholder="اكتب اسم الطالب..." class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">بحث برقم الهوية</label>
+          <input type="text" id="searchId" placeholder="رقم الهوية..." class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">الفصل الدراسي</label>
+          <select id="searchClass" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <option value="">كل الفصول</option>
+            <option value="رابع ابتدائي">رابع ابتدائي</option>
+            <option value="خامس ابتدائي">خامس ابتدائي</option>
+            <option value="سادس ابتدائي">سادس ابتدائي</option>
+            <option value="أول متوسط">أول متوسط</option>
+            <option value="ثاني متوسط">ثاني متوسط</option>
+            <option value="ثالث متوسط">ثالث متوسط</option>
+            <option value="أول ثانوي">أول ثانوي</option>
+            <option value="الثاني الثانوي">الثاني الثانوي</option>
+            <option value="الثالث الثانوي">الثالث الثانوي</option>
+          </select>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="doSearch()" class="flex-1 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-sm rounded-lg shadow transition-colors">
+            بحث
+          </button>
+          <button onclick="fetchCloudStudentsData()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition-colors shadow">
+            🔄 مزامنة
+          </button>
+          <button onclick="resetSearch()" class="px-3 py-2 bg-slate-500 hover:bg-slate-600 text-white font-bold text-xs rounded-lg transition-colors">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Print Header -->
+    <div class="print-header">
+      <h2 style="margin:0; color:#1e40af;">مجمع يلملم التعليمي</h2>
+      <p style="margin:5px 0; color:#64748b;">تقرير الطلاب</p>
+      <p style="font-size:12px;">تاريخ الطباعة: <span id="printDate"></span></p>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 no-print">
+      <div class="card-style rounded-xl p-4 text-center border-t-4 border-t-blue-600 shadow-sm">
+        <div id="totalCount" class="text-2xl font-black text-blue-600 dark:text-blue-400">0</div>
+        <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">إجمالي الطلاب</div>
+      </div>
+      <div class="card-style rounded-xl p-4 text-center border-t-4 border-t-indigo-600 shadow-sm">
+        <div id="resultCount" class="text-2xl font-black text-indigo-600 dark:text-indigo-400">0</div>
+        <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">نتائج البحث</div>
+      </div>
+      <div class="card-style rounded-xl p-4 text-center border-t-4 border-t-emerald-600 shadow-sm">
+        <div id="withPhone" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">0</div>
+        <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">لديهم جوال ولي أمر</div>
+      </div>
+      <div class="card-style rounded-xl p-4 text-center border-t-4 border-t-purple-600 shadow-sm">
+        <div id="contacted" class="text-2xl font-black text-purple-600 dark:text-purple-400">0</div>
+        <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">تم التواصل معهم</div>
+      </div>
+      <div class="card-style rounded-xl p-4 text-center border-t-4 border-t-red-600 shadow-sm">
+        <div id="todayAbsences" class="text-2xl font-black text-red-600 dark:text-red-400">0</div>
+        <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">غائبون اليوم</div>
+      </div>
+    </div>
+
+    <!-- Data Display Area -->
+    <!-- 1. Table View -->
+    <div id="tableView" class="card-style rounded-2xl overflow-hidden shadow-sm hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-right text-xs">
+          <thead class="bg-slate-100 dark:bg-slate-800 font-bold border-b border-slate-200 dark:border-slate-700">
+            <tr>
+              <th class="p-3">اسم الطالب</th>
+              <th class="p-3">الفصل</th>
+              <th class="p-3">هوية الطالب</th>
+              <th class="p-3">جوال الطالب</th>
+              <th class="p-3">ولي الأمر</th>
+              <th class="p-3">جوال ولي الأمر</th>
+              <th class="p-3">هوية ولي الأمر</th>
+              <th class="p-3 text-center no-print">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="divide-y divide-slate-200 dark:divide-slate-700"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2. Cards View -->
+    <div id="cardsView" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+    <!-- Empty Results Message -->
+    <div id="emptyMsg" class="hidden card-style rounded-2xl p-12 text-center text-slate-400 font-semibold text-sm">
+      لا توجد نتائج مطابقة لبيانات البحث الحالية.
+    </div>
+
+  </main>
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- 1. Add / Edit Student Modal -->
+<div class="modal" id="editModal">
+  <div class="card-style rounded-2xl max-w-lg w-full p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+    <h3 id="modalTitle" class="text-lg font-bold text-blue-700 dark:text-blue-400 mb-4">تعديل بيانات الطالب</h3>
+    <form onsubmit="saveStudent(event)" class="space-y-3 text-xs">
+      <div>
+        <label class="block font-bold mb-1">اسم الطالب *</label>
+        <input type="text" id="f_name" required class="w-full p-2.5 rounded-lg border dark:bg-slate-800 dark:border-slate-700">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold mb-1">الفصل</label>
+          <input type="text" id="f_class" list="classList" class="w-full p-2.5 rounded-lg border dark:bg-slate-800 dark:border-slate-700">
+          <datalist id="classList">
+            <option value="رابع ابتدائي"><option value="خامس ابتدائي"><option value="سادس ابتدائي">
+            <option value="أول متوسط"><option value="ثاني متوسط"><option value="ثالث متوسط">
+            <option value="أول ثانوي"><option value="الثاني الثانوي"><option value="الثالث الثانوي">
+          </datalist>
+        </div>
+        <div>
+          <label class="block font-bold mb-1">هوية الطالب</label>
+          <input type="text" id="f_student_id" class="w-full p-2.5 rounded-lg border dark:bg-slate-800 dark:border-slate-700">
+        </div>
+      </div>
+      <div>
+        <label class="block font-bold mb-1">جوال الطالب</label>
+        <input type="text" id="f_student_phone" class="w-full p-2.5 rounded-lg border dark:bg-slate-800 dark:border-slate-700">
+      </div>
+      <div>
+        <label class="block font-bold mb-1">اسم ولي الأمر</label>
+        <input type="text" id="f_guardian" class="w-full p-2.5 rounded-lg border dark:bg-slate-800 dark:border-slate-700">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold mb-1">جوال ولي الأمر</label>
+          <input type="text" id="f_guardian_phone" class="w-full p-2.5 rounded-lg border dark:bg-slate-800 dark:border-slate-700">
+        </div>
+        <div>
+          <label class="block font-bold mb-1">هوية ولي الأمر</label>
+          <input type="text" id="f_guardian_id" class="w-full p-2.5 rounded-lg border dark:bg-slate-800 dark:border-slate-700">
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-4 border-t dark:border-slate-700">
+        <button type="button" onclick="closeModal('editModal')" class="px-4 py-2 bg-slate-500 text-white rounded-lg font-bold">إلغاء</button>
+        <button type="submit" class="px-5 py-2 bg-blue-700 text-white rounded-lg font-bold shadow">حفظ البيانات</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 2. WhatsApp Modal -->
+<div class="modal" id="waModal">
+  <div class="card-style rounded-2xl max-w-md w-full p-6 shadow-2xl">
+    <h3 class="text-base font-bold text-emerald-600 mb-2">إرسال رسالة واتساب</h3>
+    <p class="text-xs text-slate-500 mb-4">إلى ولي أمر: <strong id="waGuardian" class="text-slate-800 dark:text-white"></strong> (الطالب: <span id="waStudent"></span>)</p>
+    
+    <div id="waMessages" class="space-y-2 mb-4 max-h-60 overflow-y-auto"></div>
+
+    <div class="flex justify-end">
+      <button onclick="closeModal('waModal')" class="px-4 py-2 bg-slate-500 text-white text-xs font-bold rounded-lg">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Communication Log Modal -->
+<div class="modal" id="logModal">
+  <div class="card-style rounded-2xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <h3 class="text-lg font-bold text-purple-700 dark:text-purple-400 mb-1">سجل التواصل والملاحظات</h3>
+    <p class="text-xs text-slate-500 mb-4">الطالب: <strong id="logStudent" class="text-slate-800 dark:text-white"></strong> | ولي الأمر: <strong id="logGuardian"></strong></p>
+
+    <div id="logList" class="space-y-3 mb-6 max-h-64 overflow-y-auto p-1"></div>
+
+    <!-- Add Log Form (Hidden for Teachers) -->
+    <div id="addLogSection" class="border-t pt-4 dark:border-slate-700 space-y-3">
+      <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300">إضافة توثيق تواصل جديد:</h4>
+      <select id="logMessageSelect" class="w-full p-2 text-xs rounded-lg border dark:bg-slate-800 dark:border-slate-700"></select>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="logReplied" class="rounded text-blue-600">
+        <label for="logReplied" class="text-xs font-bold">تم الرد من ولي الأمر</label>
+      </div>
+      <button onclick="addLogEntry()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow">
+        ➕ تسجيل التواصل
+      </button>
+    </div>
+
+    <div class="flex justify-between items-center pt-4 border-t mt-4 dark:border-slate-700">
+      <button onclick="printStudentReport()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow">
+        🖨️ طباعة تقرير التواصل الرسمي
+      </button>
+      <button onclick="closeModal('logModal')" class="px-4 py-2 bg-slate-500 text-white text-xs font-bold rounded-lg">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Manage Users Modal (Admin Only) -->
+<div class="modal" id="usersModal">
+  <div class="card-style rounded-2xl max-w-3xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
+      <h3 class="text-lg font-bold text-amber-600">⚙️ إدارة حسابات وصلاحيات النظام</h3>
+      <button onclick="openAddUserForm()" class="px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold rounded-lg">
+        ➕ إضافة حساب جديد
+      </button>
+    </div>
+
+    <!-- Users Table -->
+    <div class="overflow-x-auto mb-6">
+      <table class="w-full text-right text-xs">
+        <thead class="bg-slate-100 dark:bg-slate-800 font-bold">
+          <tr>
+            <th class="p-2.5">اسم المستخدم</th>
+            <th class="p-2.5">الاسم الكامل</th>
+            <th class="p-2.5">الدور / الصلاحية</th>
+            <th class="p-2.5 text-center">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody" class="divide-y divide-slate-200 dark:divide-slate-700"></tbody>
+      </table>
+    </div>
+
+    <!-- User Add/Edit Form -->
+    <div id="userFormContainer" class="hidden border-t pt-4 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
+      <h4 id="userFormTitle" class="text-xs font-bold text-blue-700 dark:text-blue-400 mb-3">إضافة حساب جديد</h4>
+      <form onsubmit="saveUserAccount(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div>
+          <label class="block font-bold mb-1">اسم المستخدم (Username) *</label>
+          <input type="text" id="u_username" required class="w-full p-2 rounded border dark:bg-slate-800">
+        </div>
+        <div>
+          <label class="block font-bold mb-1">كلمة المرور *</label>
+          <input type="text" id="u_password" required class="w-full p-2 rounded border dark:bg-slate-800">
+        </div>
+        <div>
+          <label class="block font-bold mb-1">الاسم الكامل (الظاهر في التقارير) *</label>
+          <input type="text" id="u_fullname" required class="w-full p-2 rounded border dark:bg-slate-800">
+        </div>
+        <div>
+          <label class="block font-bold mb-1">الصلاحية / الدور *</label>
+          <select id="u_role" required class="w-full p-2 rounded border dark:bg-slate-800">
+            <option value="admin">مدير النظام (كامل الصلاحيات)</option>
+            <option value="vice">وكيل الطلاب (تعديل وتواصل وتصدير)</option>
+            <option value="counselor">الموجه الطلابي (إدارة التواصل والتقارير)</option>
+            <option value="teacher">معلم / مشاهد (عرض وتصدير وطباعة فقط)</option>
+            <option value="absence_officer">مسؤول الغياب (تسجيل وتقرير الغياب فقط)</option>
+          </select>
+        </div>
+        <div class="sm:col-span-2 flex justify-end gap-2 mt-2">
+          <button type="button" onclick="closeUserForm()" class="px-3 py-1.5 bg-slate-500 text-white rounded font-bold">إلغاء</button>
+          <button type="submit" class="px-4 py-1.5 bg-blue-700 text-white rounded font-bold">حفظ الحساب</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="flex justify-end mt-4">
+      <button onclick="closeModal('usersModal')" class="px-4 py-2 bg-slate-500 text-white text-xs font-bold rounded-lg">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 5. Bulk Message Modal -->
+<div class="modal" id="bulkModal">
+  <div class="card-style rounded-2xl max-w-3xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
+      <h3 class="text-lg font-bold text-emerald-600">📢 رسالة جماعية لأولياء الأمور</h3>
+      <button onclick="closeModal('bulkModal')" class="px-3 py-1.5 bg-slate-500 text-white text-xs font-bold rounded-lg">إغلاق</button>
+    </div>
+
+    <div class="space-y-4 text-sm">
+      <div>
+        <label class="block font-bold mb-1">اختر طريقة التحديد:</label>
+        <div class="flex gap-4">
+          <label class="flex items-center gap-2"><input type="radio" name="bulkMode" value="class" checked onchange="toggleBulkMode()"> حسب الفصل</label>
+          <label class="flex items-center gap-2"><input type="radio" name="bulkMode" value="manual" onchange="toggleBulkMode()"> تحديد يدوي</label>
+        </div>
+      </div>
+
+      <div id="classMode">
+        <label class="block font-bold mb-1">اختر الفصل:</label>
+        <select id="bulkClassSelect" class="w-full p-2 rounded border dark:bg-slate-800 dark:border-slate-700">
+          <option value="">-- اختر الفصل --</option>
+        </select>
+      </div>
+
+      <div id="manualMode" class="hidden">
+        <label class="block font-bold mb-1">ابحث واختر الطلاب:</label>
+        <input type="text" id="bulkSearch" placeholder="ابحث باسم الطالب..." class="w-full p-2 mb-2 rounded border dark:bg-slate-800" oninput="filterBulkStudents()">
+        <div id="bulkStudentsList" class="max-h-60 overflow-y-auto border rounded p-2 space-y-1 text-xs dark:border-slate-700"></div>
+      </div>
+
+      <div>
+        <label class="block font-bold mb-1">اختر الرسالة:</label>
+        <select id="bulkMessageSelect" class="w-full p-2 rounded border dark:bg-slate-800 dark:border-slate-700"></select>
+      </div>
+
+      <button onclick="prepareBulkList()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg">تجهيز قائمة الإرسال</button>
+
+      <div id="bulkResult" class="hidden mt-4 border-t pt-4">
+        <h4 class="font-bold mb-2">قائمة الإرسال (<span id="bulkCount">0</span> ولي أمر):</h4>
+        <div id="bulkSendList" class="space-y-2 max-h-80 overflow-y-auto"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- 5.5 Templates Management Modal -->
+<div class="modal" id="templatesModal">
+  <div class="card-style rounded-2xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
+      <h3 class="text-lg font-bold text-indigo-600">📝 إدارة قوالب الرسائل</h3>
+      <button onclick="closeModal('templatesModal')" class="px-3 py-1.5 bg-slate-500 text-white text-xs font-bold rounded-lg">إغلاق</button>
+    </div>
+
+    <div class="mb-4">
+      <label class="block font-bold text-xs mb-1">إضافة قالب جديد:</label>
+      <div class="flex gap-2">
+        <input type="text" id="newTemplateInput" placeholder="مثال: السلام عليكم، ولي أمر الطالب {student} ..." class="flex-1 p-2 text-xs rounded border dark:bg-slate-800">
+        <button onclick="addTemplate()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg">إضافة</button>
+      </div>
+      <p class="text-[10px] text-slate-400 mt-1">استخدم {student} ليتم استبداله باسم الطالب تلقائياً.</p>
+    </div>
+
+    <div id="templatesList" class="space-y-2 max-h-80 overflow-y-auto"></div>
+  </div>
+</div>
+
+<!-- 5.6 Timetable Modal -->
+<div class="modal" id="timetableModal">
+  <div class="card-style rounded-2xl max-w-6xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
+      <h3 class="text-lg font-bold text-cyan-600">📅 الجدول المدرسي</h3>
+      <button onclick="closeModal('timetableModal')" class="px-3 py-1.5 bg-slate-500 text-white text-xs font-bold rounded-lg">إغلاق</button>
+    </div>
+    <div class="mb-4 flex gap-3 items-center">
+      <label class="text-xs font-bold">اختر اليوم:</label>
+      <select id="timetableDay" class="p-2 text-xs rounded border dark:bg-slate-800" onchange="renderTimetable()">
+        <option value="الأحد">الأحد</option>
+        <option value="الاثنين">الاثنين</option>
+        <option value="الثلاثاء">الثلاثاء</option>
+        <option value="الأربعاء">الأربعاء</option>
+        <option value="الخميس">الخميس</option>
+      </select>
+    </div>
+    <div id="timetableContent" class="overflow-x-auto text-xs"></div>
+  </div>
+</div>
+
+<!-- 6. Absence Recording Modal -->
+<div class="modal" id="absenceModal">
+  <div class="card-style rounded-2xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
+      <h3 class="text-lg font-bold text-red-600">📝 تسجيل الغياب</h3>
+      <button onclick="closeModal('absenceModal')" class="px-3 py-1.5 bg-slate-500 text-white text-xs font-bold rounded-lg">إغلاق</button>
+    </div>
+    <div class="space-y-4 text-sm">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold mb-1">التاريخ</label>
+          <input type="date" id="absenceDate" class="w-full p-2 rounded border dark:bg-slate-800">
+        </div>
+        <div>
+          <label class="block font-bold mb-1">الفصل</label>
+          <select id="absenceClass" class="w-full p-2 rounded border dark:bg-slate-800" onchange="loadAbsenceStudents()">
+            <option value="">-- اختر الفصل --</option>
+          </select>
+        </div>
+      </div>
+      <div id="absenceStudentsList" class="max-h-80 overflow-y-auto border rounded p-2 space-y-1 text-xs"></div>
+      <button onclick="saveAbsences()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg">حفظ الغياب</button>
+    </div>
+  </div>
+</div>
+
+<!-- 7. Absence Report Modal -->
+<div class="modal" id="absenceReportModal">
+  <div class="card-style rounded-2xl max-w-4xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
+      <h3 class="text-lg font-bold text-orange-600">📊 تقرير الغياب</h3>
+      <div class="flex gap-2">
+        <button onclick="printAbsenceReport()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg">🖨️ طباعة رسمية</button>
+        <button onclick="closeModal('absenceReportModal')" class="px-3 py-1.5 bg-slate-500 text-white text-xs font-bold rounded-lg">إغلاق</button>
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="text-xs font-bold">فلتر بالتاريخ:</label>
+      <input type="date" id="reportDateFilter" class="p-2 rounded border dark:bg-slate-800 text-sm" onchange="renderAbsenceReport()">
+      <button onclick="document.getElementById('reportDateFilter').value=''; renderAbsenceReport();" class="mr-2 px-3 py-1 bg-slate-500 text-white text-xs rounded">الكل</button>
+    </div>
+    <div id="absenceReportContent" class="text-sm"></div>
+  </div>
+</div>
+
+
+<!-- 8. Notify Absentees Modal -->
+<div class="modal" id="notifyAbsenteesModal">
+  <div class="card-style rounded-2xl max-w-3xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
+      <h3 class="text-lg font-bold text-pink-600">📩 إشعار أولياء أمور الغائبين</h3>
+      <button onclick="closeModal('notifyAbsenteesModal')" class="px-3 py-1.5 bg-slate-500 text-white text-xs font-bold rounded-lg">إغلاق</button>
+    </div>
+    <div class="space-y-4 text-sm">
+      <div>
+        <label class="block font-bold mb-1">التاريخ</label>
+        <input type="date" id="notifyDate" class="w-full p-2 rounded border dark:bg-slate-800" onchange="loadTodayAbsentees()">
+      </div>
+      <div id="notifyAbsenteesList" class="max-h-96 overflow-y-auto border rounded p-2 space-y-1"></div>
+      <div class="flex justify-between items-center pt-2 border-t">
+        <span class="text-xs text-slate-500">المحدد: <strong id="notifySelectedCount">0</strong></span>
+        <button onclick="sendNotifyBulk()" class="px-5 py-2 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg">إرسال رسالة جماعية للغائبين</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+<script>
+// API URL
+const API_URL = 'https://script.google.com/macros/s/AKfycbwDGllsayA4YI7T4TmKBOOZG-8NwLRwogT7tPI4neeqO4ggkEjeGPoGEAjvmCkeUFLujQ/exec';
+
+const STORAGE_KEY_STUDENTS = 'students_db_yalamlal_v2';
+const STORAGE_KEY_USERS = 'users_db_yalamlal_v2';
+const STORAGE_KEY_AUTH = 'auth_session_yalamlal_v2';
+
+const ROLES = {
+  admin: { name: 'مدير النظام', badge: 'bg-red-500 text-white' },
+  vice: { name: 'وكيل الطلاب', badge: 'bg-emerald-600 text-white' },
+  counselor: { name: 'الموجه الطلابي', badge: 'bg-amber-600 text-white' },
+  teacher: { name: 'معلم / مشاهد', badge: 'bg-purple-600 text-white' },
+  absence_officer: { name: 'مسؤول الغياب', badge: 'bg-rose-600 text-white' }
+};
+
+const DEFAULT_USERS = [
+  { username: 'admin', password: 'admin123', fullname: 'أ. محمد علي الفهمي', role: 'admin' },
+  { username: 'vice', password: 'vice123', fullname: 'أ. عبدالعزيز امبارك الفهمي', role: 'vice' },
+  { username: 'counselor', password: 'guide123', fullname: 'أ. إبراهيم عطيه الزهراني', role: 'counselor' },
+  { username: 'teacher', password: 'teacher123', fullname: 'معلم المجمع', role: 'teacher' },
+  { username: 'absence', password: 'absence123', fullname: 'مسؤول الغياب', role: 'absence_officer' }
+];
+
+const DEFAULT_STUDENTS = [
+  {"name": "اياد عائش السفياني", "class_name": "رابع ابتدائي", "student_id": "1186432025", "student_phone": "966555875190", "guardian": "عائش سحيم السفياني", "guardian_phone": "966555875190", "guardian_id": "1069942975"},
+  {"name": "تميم منور الفهمي", "class_name": "رابع ابتدائي", "student_id": "1183083623", "student_phone": "966559443378", "guardian": "منور رده الفهمي", "guardian_phone": "966559443378", "guardian_id": "1047018229"},
+  {"name": "جارالله مغبى الجحدلى", "class_name": "رابع ابتدائي", "student_id": "1183607645", "student_phone": "966583093265", "guardian": "صالح بن مغبي الجحدلي", "guardian_phone": "966583093265", "guardian_id": "1034632941"},
+  {"name": "سلمان معتوق الجحدلى", "class_name": "رابع ابتدائي", "student_id": "1185027396", "student_phone": "966559551075", "guardian": "معتوق مغبش الجحدلي", "guardian_phone": "966559551075", "guardian_id": "1055900763"},
+  {"name": "عبدالرحمن سعد الجحدلى", "class_name": "رابع ابتدائي", "student_id": "1179203045", "student_phone": "966595689698", "guardian": "سعد بن جبير الجحدلى", "guardian_phone": "966581382475", "guardian_id": "1049544081"},
+  {"name": "عبدالعزيز السفياني", "class_name": "رابع ابتدائي", "student_id": "1184096020", "student_phone": "966555875189", "guardian": "عبدالرحمن سحيم السفياني", "guardian_phone": "966555875189", "guardian_id": "1069942959"},
+  {"name": "عزام عامر السفياني", "class_name": "رابع ابتدائي", "student_id": "1181452234", "student_phone": "966592486453", "guardian": "عامر عمير السويعدي", "guardian_phone": "966592486453", "guardian_id": "1012120455"},
+  {"name": "علي سليم الجحدلي", "class_name": "رابع ابتدائي", "student_id": "1180688259", "student_phone": "966581449899", "guardian": "سليم مسلم الجحدلي", "guardian_phone": "966581449899", "guardian_id": "1067696854"},
+  {"name": "محسن حاسن الفهمي", "class_name": "رابع ابتدائي", "student_id": "1182312635", "student_phone": "966559055434", "guardian": "حاسن محسن الفهمي", "guardian_phone": "966559055434", "guardian_id": "1072352840"},
+  {"name": "محمد احمد صبره", "class_name": "رابع ابتدائي", "student_id": "2450793704", "student_phone": "966599185120", "guardian": "احمد صادق صبره", "guardian_phone": "966599185120", "guardian_id": "2046604860"},
+  {"name": "محمد غلام المالكي", "class_name": "رابع ابتدائي", "student_id": "1184558821", "student_phone": "966533346488", "guardian": "غلام بن رده المالكي", "guardian_phone": "966533346488", "guardian_id": "1050878873"},
+  {"name": "محمد منصور الجحدلي", "class_name": "رابع ابتدائي", "student_id": "1180066183", "student_phone": "966555022840", "guardian": "منصور بن غباش الجحدلي", "guardian_phone": "966555022840", "guardian_id": "1002732004"},
+  {"name": "مشعل عبدالمحسن السفياني", "class_name": "رابع ابتدائي", "student_id": "1183404837", "student_phone": "966554223943", "guardian": "عبدالمحسن هلال السفياني", "guardian_phone": "966554223943", "guardian_id": "1059999647"},
+  {"name": "وسيم عطيه الجحدلى", "class_name": "رابع ابتدائي", "student_id": "1185827233", "student_phone": "966590875772", "guardian": "عطيه عانى الجحدلى", "guardian_phone": "966590875772", "guardian_id": "1074066370"},
+  {"name": "يوسف حجلي الفهمي", "class_name": "رابع ابتدائي", "student_id": "1185095385", "student_phone": "966592972203", "guardian": "حجلي صبحي الفهمي", "guardian_phone": "966592972203", "guardian_id": "1043938925"},
+  {"name": "حمزه أحمد صبره", "class_name": "خامس ابتدائي", "student_id": "2438782431", "student_phone": "966595979171", "guardian": "احمد صادق صبره", "guardian_phone": "966595979171", "guardian_id": "2046604860"},
+  {"name": "سطام سعيد الفهمى", "class_name": "خامس ابتدائي", "student_id": "1178328538", "student_phone": "966557011503", "guardian": "سعيد بن رازق الفهمى", "guardian_phone": "966557011503", "guardian_id": "1017419050"},
+  {"name": "سعود صالح الجحدلى", "class_name": "خامس ابتدائي", "student_id": "1197305236", "student_phone": "966580713015", "guardian": "صالح بن سعيد بن الجحدلي", "guardian_phone": "966580713015", "guardian_id": "1056689381"},
+  {"name": "طاهر سالم الفهمي", "class_name": "خامس ابتدائي", "student_id": "1180321927", "student_phone": "966552110460", "guardian": "سالم عبيد الفهمي", "guardian_phone": "966552110460", "guardian_id": "1039491038"},
+  {"name": "عبدالرحمن ياسر الحميد", "class_name": "خامس ابتدائي", "student_id": "2181127150", "student_phone": "966534487684", "guardian": "ياسر محمد الحميد", "guardian_phone": "966557220125", "guardian_id": "2264612074"},
+  {"name": "مجاهد محمد السويعدي", "class_name": "خامس ابتدائي", "student_id": "", "student_phone": "966534487684", "guardian": "محمد حمدي السويعدي", "guardian_phone": "966573507525", "guardian_id": "1081787705"},
+  {"name": "خالد محمد السويعدي", "class_name": "سادس ابتدائي", "student_id": "1174806693", "student_phone": "966573507525", "guardian": "محمد حمدي السويعدي", "guardian_phone": "966573507525", "guardian_id": "1081787705"},
+  {"name": "مشهور ساعد الفهمي", "class_name": "سادس ابتدائي", "student_id": "1168397410", "student_phone": "966544814831", "guardian": "ساعد بن مسفر الفهمي", "guardian_phone": "966544814831", "guardian_id": "1091865681"},
+  {"name": "مسلم سلبم الجحدلي", "class_name": "سادس ابتدائي", "student_id": "1174908754", "student_phone": "966581449799", "guardian": "مسلم معطي الجحدلي", "guardian_phone": "966581449799", "guardian_id": "1067696854"},
+  {"name": "رافي نافع القارحي", "class_name": "سادس ابتدائي", "student_id": "1173979475", "student_phone": "966595011256", "guardian": "نافع فطيس القارحي", "guardian_phone": "966548546744", "guardian_id": "1066290964"},
+  {"name": "ثامر مطار الفهمي", "class_name": "سادس ابتدائي", "student_id": "1161592488", "student_phone": "966500877466", "guardian": "مطار يحي الفهمي", "guardian_phone": "966500877466", "guardian_id": "1066763853"},
+  {"name": "الوليد احمد صبرة", "class_name": "أول متوسط", "student_id": "2428465443", "student_phone": "966593215630", "guardian": "احمد صادق صبره", "guardian_phone": "966595979171", "guardian_id": "2046604860"},
+  {"name": "بسام دخيل الفهمي", "class_name": "أول متوسط", "student_id": "1167361532", "student_phone": "966541828582", "guardian": "دخيل بن عبدالله بن الفهمي", "guardian_phone": "966541828582", "guardian_id": "1047959299"},
+  {"name": "بندر سالم الجحدلي", "class_name": "أول متوسط", "student_id": "1169210562", "student_phone": "966566794632", "guardian": "سالم بن غابش بن الجحدلي", "guardian_phone": "966590768257", "guardian_id": "1059327286"},
+  {"name": "جهاد عائش السفياني", "class_name": "أول متوسط", "student_id": "1168712154", "student_phone": "966555875190", "guardian": "عايش سحيم السفياني", "guardian_phone": "966555875190", "guardian_id": "1069942975"},
+  {"name": "حسن علي الهذلي", "class_name": "أول متوسط", "student_id": "1174423887", "student_phone": "966583355439", "guardian": "علي تركي الهذلي", "guardian_phone": "966583355439", "guardian_id": "1057318683"},
+  {"name": "دخيل مبروك الفهمي", "class_name": "أول متوسط", "student_id": "1169886643", "student_phone": "966591613253", "guardian": "مبروك بن دخيل الفهمي", "guardian_phone": "966501029294", "guardian_id": "1566431949"},
+  {"name": "سهم مطر الجحدلي", "class_name": "أول متوسط", "student_id": "1172167940", "student_phone": "966557161734", "guardian": "مطر يحي الجحدلي", "guardian_phone": "966557161734", "guardian_id": "1069182903"},
+  {"name": "عبدالله سعد الجحدلى", "class_name": "أول متوسط", "student_id": "1168821591", "student_phone": "966534487684", "guardian": "سعد بن جبير الجحدلى", "guardian_phone": "966594486246", "guardian_id": "1049544081"},
+  {"name": "عبدالله عايد الفهمي", "class_name": "أول متوسط", "student_id": "1170097651", "student_phone": "966580289413", "guardian": "عايد عتيق الفهمي", "guardian_phone": "966599653136", "guardian_id": "1062159049"},
+  {"name": "عبيد منصور الجحدلي", "class_name": "أول متوسط", "student_id": "1169932371", "student_phone": "966590574564", "guardian": "منصور شاكر الجحدلي", "guardian_phone": "966557125304", "guardian_id": "1038617450"},
+  {"name": "عمار احمد الفهمي", "class_name": "أول متوسط", "student_id": "1170044356", "student_phone": "966555573281", "guardian": "احمد بن عمار الفهمي", "guardian_phone": "966555573281", "guardian_id": "1056686114"},
+  {"name": "فادي بريك الفهمي", "class_name": "أول متوسط", "student_id": "1171501651", "student_phone": "966590220684", "guardian": "بريك بن فراج بن الفهمي", "guardian_phone": "966590220684", "guardian_id": "1055063356"},
+  {"name": "فارس محمد الجحدلي", "class_name": "أول متوسط", "student_id": "1169513015", "student_phone": "966504285099", "guardian": "محمد كليب الجحدلي", "guardian_phone": "966504285099", "guardian_id": "1064181876"},
+  {"name": "فراس احمد المالكي", "class_name": "أول متوسط", "student_id": "1171335233", "student_phone": "966509198498", "guardian": "احمد رده الهلالي", "guardian_phone": "966509198498", "guardian_id": "1050878899"},
+  {"name": "ماجد محيسن الجحدلى", "class_name": "أول متوسط", "student_id": "1189882234", "student_phone": "966534487684", "guardian": "محيسن ابن عقيل الجحدلى", "guardian_phone": "966530071360", "guardian_id": ""},
+  {"name": "مجدي محمد السويعدي", "class_name": "أول متوسط", "student_id": "1170427163", "student_phone": "966568888740", "guardian": "محمد حمدي السويعدي", "guardian_phone": "966573507525", "guardian_id": "1081787705"},
+  {"name": "هلال صالح الجحدلى", "class_name": "أول متوسط", "student_id": "1164411504", "student_phone": "966500210663", "guardian": "صالح عقيل الجحدلى", "guardian_phone": "966500210663", "guardian_id": "1073793380"},
+  {"name": "وسام حسن الفهمي", "class_name": "أول متوسط", "student_id": "1168038527", "student_phone": "966593419195", "guardian": "حسن عابد الفهمي", "guardian_phone": "966552665740", "guardian_id": "1053571947"},
+  {"name": "وليد سالم الجحدلي", "class_name": "أول متوسط", "student_id": "1171638693", "student_phone": "966583032917", "guardian": "سالم عبيد الجحدلي", "guardian_phone": "966506028491", "guardian_id": "1051837159"},
+  {"name": "ابراهيم معيوف الفهمي", "class_name": "ثاني متوسط", "student_id": "1164291641", "student_phone": "966596890171", "guardian": "معيوف مناع الفهمي", "guardian_phone": "966596890171", "guardian_id": "1037593066"},
+  {"name": "أحمد حامد الجحدلي", "class_name": "ثاني متوسط", "student_id": "1164365569", "student_phone": "", "guardian": "حامد جبر الجحدلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "تركي معزز الجحدلي", "class_name": "ثاني متوسط", "student_id": "1163257734", "student_phone": "966502673147", "guardian": "معزز عويدي الجحدلي", "guardian_phone": "966502673147", "guardian_id": "1037805015"},
+  {"name": "حامد عيد الجحدلي", "class_name": "ثاني متوسط", "student_id": "1166565281", "student_phone": "966553039507", "guardian": "عيد معود الجحدلي", "guardian_phone": "966553039507", "guardian_id": "1026368058"},
+  {"name": "حسين سليم الجحدلي", "class_name": "ثاني متوسط", "student_id": "1161287519", "student_phone": "", "guardian": "سليم مسلم الجحدلي", "guardian_phone": "966581449899", "guardian_id": "1067696854"},
+  {"name": "خميس سعيد الجحدلي", "class_name": "ثاني متوسط", "student_id": "1167361565", "student_phone": "966550558100", "guardian": "سعيد بن خميس الجحدلي", "guardian_phone": "966550558100", "guardian_id": "1061935100"},
+  {"name": "زياد معزز الجحدلي", "class_name": "ثاني متوسط", "student_id": "1163257619", "student_phone": "966502673147", "guardian": "معزز عويدي الجحدلي", "guardian_phone": "966502673147", "guardian_id": "1037805015"},
+  {"name": "سامي حجلي الفهمي", "class_name": "ثاني متوسط", "student_id": "1163828153", "student_phone": "966592972203", "guardian": "حجلي صبحي الفهمي", "guardian_phone": "966592972203", "guardian_id": "1043938925"},
+  {"name": "سطام حسين الفهمي", "class_name": "ثاني متوسط", "student_id": "1165450782", "student_phone": "966595845007", "guardian": "حسين سلطان الفهمي", "guardian_phone": "966595845007", "guardian_id": "1033138346"},
+  {"name": "شامان خويتم الفهمي", "class_name": "ثاني متوسط", "student_id": "1164623355", "student_phone": "966549494443", "guardian": "خويتم يسير الفهمي", "guardian_phone": "966549494443", "guardian_id": "1021244064"},
+  {"name": "عبدالواحد سالم الفهمي", "class_name": "ثاني متوسط", "student_id": "1160106751", "student_phone": "966552110460", "guardian": "سالم عبيد الفهمي", "guardian_phone": "966552110460", "guardian_id": "1039491038"},
+  {"name": "عثمان عطيه الفهمي", "class_name": "ثاني متوسط", "student_id": "1163103573", "student_phone": "966503593351", "guardian": "عطيه رجاء الفهمي", "guardian_phone": "966503593351", "guardian_id": "1057004820"},
+  {"name": "علاءالدين ظافر رزق الله", "class_name": "ثاني متوسط", "student_id": "201072286", "student_phone": "966583034192", "guardian": "ظافر النعيم علي", "guardian_phone": "966583034192", "guardian_id": "2325833123"},
+  {"name": "عماد محمد الجحدلي", "class_name": "ثاني متوسط", "student_id": "1164239657", "student_phone": "", "guardian": "محمد مضحي الجحدلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "محمد مزيبد الفهمي", "class_name": "ثاني متوسط", "student_id": "1161874159", "student_phone": "", "guardian": "مزيبد بن بركي بن الفهمي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "هاني مطير الجحدلي", "class_name": "ثاني متوسط", "student_id": "1168688511", "student_phone": "966504395487", "guardian": "مطير عادي الجحدلي", "guardian_phone": "966504395487", "guardian_id": "1058606011"},
+  {"name": "وسام دخيل الفهمي", "class_name": "ثاني متوسط", "student_id": "1163506486", "student_phone": "966541828582", "guardian": "دخيل بن عبدالله بن الفهمي", "guardian_phone": "966541828582", "guardian_id": "1047959299"},
+  {"name": "يحي مطر الجحدلي", "class_name": "ثاني متوسط", "student_id": "1164048090", "student_phone": "966557161734", "guardian": "مطر يحي الجحدلي", "guardian_phone": "966557161734", "guardian_id": "1069182903"},
+  {"name": "أحمد صليح الجحدلي", "class_name": "ثالث متوسط", "student_id": "1158495208", "student_phone": "966550986294", "guardian": "صليح احمد الجحدلي", "guardian_phone": "966550986294", "guardian_id": "1076790078"},
+  {"name": "بدر سالم الجحدلي", "class_name": "ثالث متوسط", "student_id": "1161399538", "student_phone": "", "guardian": "سالم بن غابش بن الجحدلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "تركي سعد الجحدلى", "class_name": "ثالث متوسط", "student_id": "1160590962", "student_phone": "", "guardian": "سعد بن جبير الجحدلى", "guardian_phone": "", "guardian_id": ""},
+  {"name": "جبر سليم الراشدي", "class_name": "ثالث متوسط", "student_id": "1160088918", "student_phone": "", "guardian": "سليم بن سالم الراشدى", "guardian_phone": "966593524091", "guardian_id": ""},
+  {"name": "سعيد ساعد الفهمي", "class_name": "ثالث متوسط", "student_id": "1149957597", "student_phone": "966544814831", "guardian": "ساعد بن مسفر الفهمي", "guardian_phone": "966544814831", "guardian_id": "1091865681"},
+  {"name": "سفر سعد الفهمي", "class_name": "ثالث متوسط", "student_id": "1162922940", "student_phone": "966559365843", "guardian": "محمد علي الفهمي", "guardian_phone": "966559365843", "guardian_id": "1091865707"},
+  {"name": "سلطان ياسر الجحدلي", "class_name": "ثالث متوسط", "student_id": "1157322734", "student_phone": "", "guardian": "ياسر حاسن الجحدلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "شاهر ساعد الفهمي", "class_name": "ثالث متوسط", "student_id": "1159925781", "student_phone": "966544814831", "guardian": "ساعد بن مسفر الفهمي", "guardian_phone": "966544814831", "guardian_id": "1091865681"},
+  {"name": "طارق مذيخر السفياني", "class_name": "ثالث متوسط", "student_id": "1160992580", "student_phone": "966549600429", "guardian": "مذيخر ردود السفياني", "guardian_phone": "966549600429", "guardian_id": "1057339846"},
+  {"name": "عبدالرحيم هليل السفياني", "class_name": "ثالث متوسط", "student_id": "1159090826", "student_phone": "", "guardian": "هليل هلال السفياني", "guardian_phone": "", "guardian_id": ""},
+  {"name": "فايز مساعد السفياني", "class_name": "ثالث متوسط", "student_id": "1162271470", "student_phone": "966580966735", "guardian": "مساعد بن ردود بن السفياني", "guardian_phone": "966580966735", "guardian_id": "1048884280"},
+  {"name": "فهد مطار الفهمي", "class_name": "ثالث متوسط", "student_id": "1161592488", "student_phone": "966500877966", "guardian": "مطار يحي الفهمي", "guardian_phone": "966500877966", "guardian_id": "1066763853"},
+  {"name": "فيصل بسوس السفياني", "class_name": "ثالث متوسط", "student_id": "1160107205", "student_phone": "966599802570", "guardian": "بسوس بسيس السفياني", "guardian_phone": "966599802570", "guardian_id": "1016500943"},
+  {"name": "محمد رزق الله الفهمي", "class_name": "ثالث متوسط", "student_id": "1159408259", "student_phone": "966553120630", "guardian": "عبدالله عواض الحارثي", "guardian_phone": "966553120630", "guardian_id": "1019291846"},
+  {"name": "مرهب حسين الجحدلي", "class_name": "ثالث متوسط", "student_id": "1162455776", "student_phone": "966557257050", "guardian": "حسين بن غباش الجحدلي", "guardian_phone": "966557257050", "guardian_id": "1027251642"},
+  {"name": "نايف بن صبرة", "class_name": "ثالث متوسط", "student_id": "2428465435", "student_phone": "966595979170", "guardian": "احمد صادق صبره", "guardian_phone": "966595979170", "guardian_id": "2046604860"},
+  {"name": "وليد معطى الجحدلى", "class_name": "ثالث متوسط", "student_id": "1166213627", "student_phone": "", "guardian": "معطى جبير الجحدلى", "guardian_phone": "", "guardian_id": ""},
+  {"name": "يوسف معتوق الجحدلى", "class_name": "ثالث متوسط", "student_id": "1161947237", "student_phone": "966559551075", "guardian": "معتوق مغبش الجحدلي", "guardian_phone": "966559551075", "guardian_id": "1055900763"},
+  {"name": "ثامر دخيل الفهمي", "class_name": "أول ثانوي", "student_id": "1156040915", "student_phone": "966596148441", "guardian": "دخيل بن عبدالله بن الفهمي", "guardian_phone": "966541828582", "guardian_id": "1047959299"},
+  {"name": "حمود مغبى الجحدلى", "class_name": "أول ثانوي", "student_id": "1155911991", "student_phone": "966584094265", "guardian": "مغبي صالح الجحدلي", "guardian_phone": "966583093265", "guardian_id": "1034632941"},
+  {"name": "خالد معتوق الجحدلى", "class_name": "أول ثانوي", "student_id": "1156677534", "student_phone": "966583639952", "guardian": "معتوق مغبش الجحدلي", "guardian_phone": "966559551075", "guardian_id": "1055900763"},
+  {"name": "ساعد سعدان الفهمي", "class_name": "أول ثانوي", "student_id": "1155627605", "student_phone": "", "guardian": "سعدان الفهمي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "سعيد حامد السويعدي", "class_name": "أول ثانوي", "student_id": "1154229841", "student_phone": "966507845731", "guardian": "حامد عمير السويعدي", "guardian_phone": "966507845731", "guardian_id": "1026507820"},
+  {"name": "سعيد سعود السويعدي", "class_name": "أول ثانوي", "student_id": "1156215020", "student_phone": "966559762465", "guardian": "سعود بن ردود بن السفياني", "guardian_phone": "966588478295", "guardian_id": "1007650623"},
+  {"name": "سلطان منيع الفهمي", "class_name": "أول ثانوي", "student_id": "1162907487", "student_phone": "966582073043", "guardian": "منيع بن معيوف بن الفهمي", "guardian_phone": "966591423367", "guardian_id": ""},
+  {"name": "سياف عتيب الجحدلي", "class_name": "أول ثانوي", "student_id": "1154889024", "student_phone": "966556037220", "guardian": "عتيب بن سنان الجحدلي", "guardian_phone": "966555406422", "guardian_id": "1053459150"},
+  {"name": "سيف عتيب الجحدلي", "class_name": "أول ثانوي", "student_id": "1148021999", "student_phone": "966555406422", "guardian": "عتيب بن سنان الجحدلي", "guardian_phone": "966555406422", "guardian_id": "1053459150"},
+  {"name": "طلال سمير الجحدلي", "class_name": "أول ثانوي", "student_id": "1155085465", "student_phone": "966531970928", "guardian": "سمير بن مغبش الجحدلي", "guardian_phone": "966531970928", "guardian_id": "1066213115"},
+  {"name": "عابد عبدالله الجحدلي", "class_name": "أول ثانوي", "student_id": "1154385726", "student_phone": "966595847359", "guardian": "عبدالله عايش الجحدلي", "guardian_phone": "966555737189", "guardian_id": "1059283240"},
+  {"name": "عارف محيل الجحدلي", "class_name": "أول ثانوي", "student_id": "1146551757", "student_phone": "966593309028", "guardian": "محيل غطيش الجحدلي", "guardian_phone": "966559105329", "guardian_id": "1026628048"},
+  {"name": "عبدالرحمن مساعد السفياني", "class_name": "أول ثانوي", "student_id": "1156627448", "student_phone": "966595506963", "guardian": "مساعد بن ردود السفياني", "guardian_phone": "966581966735", "guardian_id": "1048884280"},
+  {"name": "عبدالله سليم السفياني", "class_name": "أول ثانوي", "student_id": "1145561351", "student_phone": "966567470688", "guardian": "سليم حجلي السفياني", "guardian_phone": "966567470688", "guardian_id": "1070993629"},
+  {"name": "عبدالله عابد الفهمي", "class_name": "أول ثانوي", "student_id": "1155378522", "student_phone": "966543443475", "guardian": "عابد عبدالله الفهمي", "guardian_phone": "966501856577", "guardian_id": "1026406668"},
+  {"name": "عبدالملك بسوس السفياني", "class_name": "أول ثانوي", "student_id": "1155223488", "student_phone": "966595022095", "guardian": "بسوس بسيس السفياني", "guardian_phone": "966599802570", "guardian_id": "1016500934"},
+  {"name": "عجلان سويلم الجحدلي", "class_name": "أول ثانوي", "student_id": "1155250671", "student_phone": "966508524693", "guardian": "سويلم بن عطيوي بن الجحدلي", "guardian_phone": "966590102735", "guardian_id": ""},
+  {"name": "فرج خريفى الجحدلى", "class_name": "أول ثانوي", "student_id": "1152205751", "student_phone": "966507571849", "guardian": "خريفى بن حمدان الجحدلى", "guardian_phone": "966507571849", "guardian_id": "1056820366"},
+  {"name": "فلاح فراج الجحدلى", "class_name": "أول ثانوي", "student_id": "1155459116", "student_phone": "966580479611", "guardian": "فراج فرج الله الجحدلى", "guardian_phone": "966596852698", "guardian_id": "1064316753"},
+  {"name": "محمد حسن سفر الفهمي", "class_name": "أول ثانوي", "student_id": "1156598615", "student_phone": "966598298123", "guardian": "حسن سفر الفهمي", "guardian_phone": "966583236909", "guardian_id": "1051720272"},
+  {"name": "محمد سعد الجحدلى", "class_name": "أول ثانوي", "student_id": "1158166403", "student_phone": "966505306203", "guardian": "سعد عويض الجحدلى", "guardian_phone": "966505306203", "guardian_id": "1065918086"},
+  {"name": "محمد مسيفر سعود الفهمي", "class_name": "أول ثانوي", "student_id": "1158197812", "student_phone": "966597709241", "guardian": "مسيفر سعود الفهمي", "guardian_phone": "966597801895", "guardian_id": "1069790382"},
+  {"name": "محمد ناصر الجحدلي", "class_name": "أول ثانوي", "student_id": "1155171042", "student_phone": "966599428496", "guardian": "ناصر سالم الجحدلي", "guardian_phone": "966555873076", "guardian_id": "1038858369"},
+  {"name": "مشعل ماجد الجحدلي", "class_name": "أول ثانوي", "student_id": "1159874070", "student_phone": "966582068925", "guardian": "ماجد حشيكل الجحدلي", "guardian_phone": "966582068925", "guardian_id": "1057345231"},
+  {"name": "مصعب عبدالعزيز الفهمي", "class_name": "أول ثانوي", "student_id": "1155683830", "student_phone": "966503613341", "guardian": "عبدالعزيز بن امبارك الفهمي", "guardian_phone": "966503613341", "guardian_id": ""},
+  {"name": "ناير فهد الجحدلي", "class_name": "أول ثانوي", "student_id": "1149839142", "student_phone": "966592775048", "guardian": "فهد جبر الجحدلي", "guardian_phone": "966581956918", "guardian_id": ""},
+  {"name": "هاني أحمد الجحدلي", "class_name": "أول ثانوي", "student_id": "1158389377", "student_phone": "966595017370", "guardian": "أحمد بن مضحي الجحدلي", "guardian_phone": "966551403970", "guardian_id": "1064456278"},
+  {"name": "ياسر مسعود الجحدلى", "class_name": "أول ثانوي", "student_id": "1156659755", "student_phone": "966594861817", "guardian": "مسعود طامى الجحدلى", "guardian_phone": "966581821076", "guardian_id": "1037186838"},
+  {"name": "ابراهيم حزام بن معضد الفهمي", "class_name": "الثاني الثانوي", "student_id": "1149834655", "student_phone": "", "guardian": "حزام بن معضد الفهمي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "بندر حماد حمدان الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1153843519", "student_phone": "", "guardian": "حماد حمدان الجحدلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "تركي جمعان الجحدلى", "class_name": "الثاني الثانوي", "student_id": "1168004230", "student_phone": "", "guardian": "جمعان الجحدلى", "guardian_phone": "", "guardian_id": ""},
+  {"name": "توفيق رزق الله رازق الفهمي", "class_name": "الثاني الثانوي", "student_id": "1149516757", "student_phone": "", "guardian": "رزق الله رازق الفهمي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "جاسم سعد غابش الجحدلى", "class_name": "الثاني الثانوي", "student_id": "1146778129", "student_phone": "", "guardian": "سعد غابش الجحدلى", "guardian_phone": "", "guardian_id": ""},
+  {"name": "حمود احمد بن عمار الفهمي", "class_name": "الثاني الثانوي", "student_id": "1152600498", "student_phone": "", "guardian": "احمد بن عمار الفهمي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "خالد مسلم مسفر الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1150668885", "student_phone": "", "guardian": "مسلم مسفر الجحدلي", "guardian_phone": "966592804233", "guardian_id": "1086254362"},
+  {"name": "ريان حسين بن غباش الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1150812913", "student_phone": "", "guardian": "حسين بن غباش الجحدلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "ريان سعد بن جبير الجحدلى", "class_name": "الثاني الثانوي", "student_id": "1154252801", "student_phone": "", "guardian": "سعد بن جبير الجحدلى", "guardian_phone": "", "guardian_id": ""},
+  {"name": "ساري مسلم بن رزيق الفهمي", "class_name": "الثاني الثانوي", "student_id": "1151489430", "student_phone": "", "guardian": "مسلم بن رزيق الفهمي", "guardian_phone": "966597124106", "guardian_id": "1053266746"},
+  {"name": "سعود سعد مسفر الفهمي", "class_name": "الثاني الثانوي", "student_id": "1151992136", "student_phone": "", "guardian": "سعد مسفر الفهمي", "guardian_phone": "966559365843", "guardian_id": "1091865707"},
+  {"name": "سعيد حسن رزيق الفهمي", "class_name": "الثاني الثانوي", "student_id": "1152288062", "student_phone": "", "guardian": "حسن رزيق الفهمي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "سعيد صالح سعيد الجحدلى", "class_name": "الثاني الثانوي", "student_id": "1145854798", "student_phone": "", "guardian": "صالح سعيد الجحدلى", "guardian_phone": "966580713015", "guardian_id": "1056689381"},
+  {"name": "شافي شداد بن فرج الله الجحدلى", "class_name": "الثاني الثانوي", "student_id": "1151162060", "student_phone": "", "guardian": "شداد بن فرج الله الجحدلى", "guardian_phone": "966583613305", "guardian_id": "1022491516"},
+  {"name": "صالح مذيخر ردود السفياني", "class_name": "الثاني الثانوي", "student_id": "1153417587", "student_phone": "", "guardian": "مذيخر ردود السفياني", "guardian_phone": "966549600429", "guardian_id": "1057339846"},
+  {"name": "عادل معزز عويدي الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1155316803", "student_phone": "", "guardian": "معزز عويدي الجحدلي", "guardian_phone": "966502673147", "guardian_id": "1037805015"},
+  {"name": "عبدالرحمن أحمد صادق صبره", "class_name": "الثاني الثانوي", "student_id": "2379253566", "student_phone": "", "guardian": "أحمد صادق صبره", "guardian_phone": "", "guardian_id": ""},
+  {"name": "عبدالرحمن حسين الفهمي", "class_name": "الثاني الثانوي", "student_id": "1151675665", "student_phone": "", "guardian": "حسين الفهمي", "guardian_phone": "966599023696", "guardian_id": "1047811441"},
+  {"name": "عبدالرحمن رحيم الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1148719063", "student_phone": "", "guardian": "رحيم الجحدلي", "guardian_phone": "966556680683", "guardian_id": "1070756968"},
+  {"name": "عبدالرحمن سعد الجحدلى", "class_name": "الثاني الثانوي", "student_id": "1150238598", "student_phone": "", "guardian": "سعد الجحدلى", "guardian_phone": "966500028827", "guardian_id": "105280915"},
+  {"name": "عبيد سالم عبيد الفهمي", "class_name": "الثاني الثانوي", "student_id": "1152930713", "student_phone": "", "guardian": "سالم عبيد الفهمي", "guardian_phone": "966590980018", "guardian_id": "1039491038"},
+  {"name": "عزام علي منيع الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1153217359", "student_phone": "", "guardian": "علي منيع الجحدلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "عزام منصور شاكر الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1151635628", "student_phone": "", "guardian": "منصور شاكر الجحدلي", "guardian_phone": "966557125304", "guardian_id": "1038617450"},
+  {"name": "عطاالله سراج عوده الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1151685441", "student_phone": "", "guardian": "سراج عوده الجحدلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "غالي رزيق مرزوق الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1149619940", "student_phone": "", "guardian": "رزيق مرزوق الجحدلي", "guardian_phone": "966533532123", "guardian_id": "1061694996"},
+  {"name": "فارس مسلم بن سالم الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1148078213", "student_phone": "", "guardian": "مسلم بن سالم الجحدلي", "guardian_phone": "966559275581", "guardian_id": "1078495528"},
+  {"name": "فلاح خويتم يسير الفهمي", "class_name": "الثاني الثانوي", "student_id": "1150414918", "student_phone": "", "guardian": "خويتم يسير الفهمي", "guardian_phone": "966549494443", "guardian_id": "1021244064"},
+  {"name": "فيصل سعدالله سعود الفهمي", "class_name": "الثاني الثانوي", "student_id": "1154202020", "student_phone": "", "guardian": "سعدالله سعود الفهمي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "محمد مسلم سنين الحسناني", "class_name": "الثاني الثانوي", "student_id": "1149215350", "student_phone": "", "guardian": "مسلم سنين الحسناني", "guardian_phone": "", "guardian_id": ""},
+  {"name": "مساعد صالح سعيد الجحدلى", "class_name": "الثاني الثانوي", "student_id": "1149649996", "student_phone": "", "guardian": "صالح سعيد الجحدلى", "guardian_phone": "966580713015", "guardian_id": "1056689381"},
+  {"name": "مسلط سليم بن مسلم الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1150034914", "student_phone": "", "guardian": "سليم بن مسلم الجحدلي", "guardian_phone": "966581449799", "guardian_id": "1067696854"},
+  {"name": "مشعل فهد عويض الجحدلى", "class_name": "الثاني الثانوي", "student_id": "1151411723", "student_phone": "", "guardian": "فهد عويض الجحدلى", "guardian_phone": "966552815131", "guardian_id": "1054856305"},
+  {"name": "ممدوح بسوس بسيس السفياني", "class_name": "الثاني الثانوي", "student_id": "1150536678", "student_phone": "", "guardian": "بسوس بسيس السفياني", "guardian_phone": "966599802570", "guardian_id": "1016500934"},
+  {"name": "مهنا سعد ردود الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1155738378", "student_phone": "", "guardian": "سعد ردود الجحدلي", "guardian_phone": "966508118277", "guardian_id": "1053457527"},
+  {"name": "نايف عابد يحي الفهمي", "class_name": "الثاني الثانوي", "student_id": "1150306460", "student_phone": "", "guardian": "عابد يحي الفهمي", "guardian_phone": "966591240960", "guardian_id": "1045282868"},
+  {"name": "نوار مسلم بن سالم الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1151250105", "student_phone": "", "guardian": "مسلم بن سالم الجحدلي", "guardian_phone": "966559275581", "guardian_id": "1078495528"},
+  {"name": "هتان مانع بن منيع الفهمي", "class_name": "الثاني الثانوي", "student_id": "1154386344", "student_phone": "", "guardian": "مانع بن منيع الفهمي", "guardian_phone": "966597282374", "guardian_id": "1016788430"},
+  {"name": "ياسر سعد غابش الجحدلى", "class_name": "الثاني الثانوي", "student_id": "1152220586", "student_phone": "", "guardian": "سعد غابش الجحدلى", "guardian_phone": "966535229177", "guardian_id": "1059327302"},
+  {"name": "يوسف فارع مغبش الجحدلي", "class_name": "الثاني الثانوي", "student_id": "1159430337", "student_phone": "", "guardian": "فارع مغبش الجحدلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "اسماعيل علي الهذلي", "class_name": "الثالث الثانوي", "student_id": "1146655558", "student_phone": "", "guardian": "علي تركي الهذلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "براك تركي الهذلي", "class_name": "الثالث الثانوي", "student_id": "1154919540", "student_phone": "", "guardian": "تركي بن مكنون الدعدي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "ثامر محمد الجحدلي", "class_name": "الثالث الثانوي", "student_id": "1147107005", "student_phone": "966508757221", "guardian": "محمد حمدان الجحدلي", "guardian_phone": "966596077035", "guardian_id": "1065094284"},
+  {"name": "جاسم مسعود الجحدلى", "class_name": "الثالث الثانوي", "student_id": "1147711467", "student_phone": "966595607085", "guardian": "مسعود طامى الجحدلى", "guardian_phone": "966580821076", "guardian_id": "1037186838"},
+  {"name": "راكان حسين الجحدلي", "class_name": "الثالث الثانوي", "student_id": "1141669083", "student_phone": "", "guardian": "حسين بن غباش الجحدلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "رياض حسين الفهمي", "class_name": "الثالث الثانوي", "student_id": "1148183930", "student_phone": "966593410770", "guardian": "حسين سلطان الفهمي", "guardian_phone": "966595845007", "guardian_id": "1033138346"},
+  {"name": "شادي مقود الجحدلي", "class_name": "الثالث الثانوي", "student_id": "1144821806", "student_phone": "966502830630", "guardian": "مقود مبروك الجحدلي", "guardian_phone": "966509782461", "guardian_id": "1052803200"},
+  {"name": "طلال حسين الفهمي", "class_name": "الثالث الثانوي", "student_id": "1145687693", "student_phone": "966598890651", "guardian": "حاسن حسين الفهمي", "guardian_phone": "966597306921", "guardian_id": "1047811441"},
+  {"name": "عبدالعزيز سعود الفهمي", "class_name": "الثالث الثانوي", "student_id": "1147750713", "student_phone": "966594761570", "guardian": "سعود سفر الفهمي", "guardian_phone": "966508784868", "guardian_id": "1051720249"},
+  {"name": "عبدالعزيز يوسف الجحدلي", "class_name": "الثالث الثانوي", "student_id": "1155231507", "student_phone": "966597276569", "guardian": "يوسف صالح الجحدلي", "guardian_phone": "966558376006", "guardian_id": "1047054661"},
+  {"name": "عبدالله عايش الجحدلي", "class_name": "الثالث الثانوي", "student_id": "1145804629", "student_phone": "966581317869", "guardian": "عايش عبدالله الجحدلي", "guardian_phone": "966531445581", "guardian_id": "1059283281"},
+  {"name": "عبدالله منيع الجحدلي", "class_name": "الثالث الثانوي", "student_id": "1147974990", "student_phone": "966557280224", "guardian": "منيع بن فايز الجحدلي", "guardian_phone": "966509702839", "guardian_id": "1046283691"},
+  {"name": "عصام عامر السفياني", "class_name": "الثالث الثانوي", "student_id": "1147541740", "student_phone": "966599407393", "guardian": "عامر عمير السويعدي", "guardian_phone": "966592486453", "guardian_id": "1012120455"},
+  {"name": "عمر لبيدان الجحدلي", "class_name": "الثالث الثانوي", "student_id": "1159003779", "student_phone": "", "guardian": "لبيدان عطيوي الجحدلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "غيث مبروك الفهمي", "class_name": "الثالث الثانوي", "student_id": "1145847925", "student_phone": "", "guardian": "مبروك بن دخيل الفهمي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "فزاع سعيد الجحدلي", "class_name": "الثالث الثانوي", "student_id": "1147013641", "student_phone": "966590831484", "guardian": "سعيد نوار الجحدلي", "guardian_phone": "966597860170", "guardian_id": "1003031075"},
+  {"name": "فهد خالد الجحدلى", "class_name": "الثالث الثانوي", "student_id": "1149565549", "student_phone": "966593522717", "guardian": "خالد بن مغبش الجحدلى", "guardian_phone": "966503554851", "guardian_id": "1055900748"},
+  {"name": "كايد فهد الجحدلي", "class_name": "الثالث الثانوي", "student_id": "1136096011", "student_phone": "", "guardian": "فهد جبر الجحدلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "متعب حماد الجحدلي", "class_name": "الثالث الثانوي", "student_id": "1146549702", "student_phone": "966536584512", "guardian": "حماد سنان الجحدلي", "guardian_phone": "966592746412", "guardian_id": "1071388471"},
+  {"name": "متعب فهران الفهمي", "class_name": "الثالث الثانوي", "student_id": "1145941520", "student_phone": "966599836031", "guardian": "فهران باشه الفهمي", "guardian_phone": "966580304969", "guardian_id": "1068033760"},
+  {"name": "محمد حامد الجحدلي", "class_name": "الثالث الثانوي", "student_id": "1140803766", "student_phone": "", "guardian": "حامد جبر الجحدلي", "guardian_phone": "", "guardian_id": ""},
+  {"name": "هاني عبيد السفياني", "class_name": "الثالث الثانوي", "student_id": "1145112106", "student_phone": "966547589335", "guardian": "عبيد منقاش الحسني السفياني", "guardian_phone": "966551795714", "guardian_id": "1050663424"},
+  {"name": "هيثم بريك الفهمي", "class_name": "الثالث الثانوي", "student_id": "1148787086", "student_phone": "966545499762", "guardian": "بريك بن فراج بن الفهمي", "guardian_phone": "966590220684", "guardian_id": "1055063356"}
+];
+
+const STORAGE_KEY_TEMPLATES = 'yalmlm_templates';
+
+const DEFAULT_TEMPLATES = [
+  "السلام عليكم ، ولي أمر الطالب {student} ابنكم لم يحضر اليوم للمدرسه",
+  "السلام عليكم ، ولي أمر الطالب {student} يرجى مراجعة إدارة المدرسه"
+];
+
+let messageTemplates = [];
+
+// APP STATE
+let students = [];
+let users = [];
+let currentUser = null;
+let filtered = [];
+let editIndex = -1;
+let editingUserUsername = null;
+let currentLogIndex = -1;
+let isCardsView = true;
+let pageSize = 30;
+let currentPage = 1;
+let currentWaPhone = '';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  initTheme();
+  initUsers();
+  initTemplates();
+  checkAuth();
+  await initStudents();
+
+  ['searchName', 'searchId'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', doSearch);
+  });
+  const cls = document.getElementById('searchClass');
+  if (cls) cls.addEventListener('change', doSearch);
+});
+
+function initTemplates() {
+  const saved = localStorage.getItem(STORAGE_KEY_TEMPLATES);
+  if (saved) {
+    try { messageTemplates = JSON.parse(saved); } catch(e) { messageTemplates = [...DEFAULT_TEMPLATES]; }
+  } else {
+    messageTemplates = [...DEFAULT_TEMPLATES];
+    localStorage.setItem(STORAGE_KEY_TEMPLATES, JSON.stringify(messageTemplates));
+  }
+}
+
+function saveTemplates() {
+  localStorage.setItem(STORAGE_KEY_TEMPLATES, JSON.stringify(messageTemplates));
+  // Sync templates with students data (embedded)
+  syncTemplatesToCloud();
+}
+
+function syncTemplatesToCloud() {
+  // Embed templates as a special student entry so it syncs with existing Google Sheets
+  const templatesEntry = {
+    name: '__TEMPLATES__',
+    class_name: '__SYSTEM__',
+    student_id: 'templates',
+    student_phone: '',
+    guardian: JSON.stringify(messageTemplates),
+    guardian_phone: '',
+    guardian_id: '',
+    logs: [],
+    absences: []
+  };
+  const cleanStudents = students.filter(s => s.name !== '__TEMPLATES__');
+  const toSave = [...cleanStudents, templatesEntry];
+  try {
+    fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'saveAll', students: toSave })
+    });
+  } catch (e) {}
+}
+
+function extractTemplatesFromStudents(data) {
+  // Templates
+  const tplEntry = data.find(s => s.name === '__TEMPLATES__');
+  if (tplEntry && tplEntry.guardian) {
+    try {
+      const tpl = JSON.parse(tplEntry.guardian);
+      if (Array.isArray(tpl) && tpl.length > 0) {
+        messageTemplates = tpl;
+        localStorage.setItem(STORAGE_KEY_TEMPLATES, JSON.stringify(messageTemplates));
+      }
+    } catch (e) {}
+  }
+  // Absences backup
+  const absEntry = data.find(s => s.name === '__ABSENCES__');
+  if (absEntry && absEntry.guardian) {
+    try {
+      const abs = JSON.parse(absEntry.guardian);
+      if (abs && typeof abs === 'object') {
+        localStorage.setItem('absences_backup', JSON.stringify(abs));
+      }
+    } catch (e) {}
+  }
+  return data.filter(s => !['__TEMPLATES__', '__ABSENCES__'].includes(s.name));
+}
+
+function openTemplatesModal() {
+  renderTemplatesList();
+  document.getElementById('templatesModal').classList.add('show');
+}
+
+function renderTemplatesList() {
+  const container = document.getElementById('templatesList');
+  if (!messageTemplates.length) {
+    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">لا توجد قوالب حالياً.</p>';
+    return;
+  }
+  container.innerHTML = messageTemplates.map((tpl, idx) => `
+    <div class="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+      <div class="flex-1 text-xs">${tpl}</div>
+      <button onclick="deleteTemplate(${idx})" class="px-2 py-1 bg-red-600 text-white text-[10px] font-bold rounded">حذف</button>
+    </div>
+  `).join('');
+}
+
+function addTemplate() {
+  const input = document.getElementById('newTemplateInput');
+  const val = input.value.trim();
+  if (!val) return alert('اكتب نص القالب أولاً');
+  messageTemplates.push(val);
+  saveTemplates();
+  input.value = '';
+  renderTemplatesList();
+}
+
+function deleteTemplate(idx) {
+  if (confirm('حذف هذا القالب؟')) {
+    messageTemplates.splice(idx, 1);
+    saveTemplates();
+    renderTemplatesList();
+  }
+}
+
+function openTimetableModal() {
+  document.getElementById('timetableModal').classList.add('show');
+  renderTimetable();
+}
+
+function renderTimetable() {
+  const day = document.getElementById('timetableDay').value;
+  const container = document.getElementById('timetableContent');
+  
+  const timetable = {
+    "الأحد": [
+      { teacher: "عبدالمجيد", periods: ["6ب رياضيا", "", "", "6ب رياضيا", "4ب رياضيا", "5ب رياضيا", "5ب رياضيا"] },
+      { teacher: "محمد البركاتي", periods: ["ن", "ن", "1ث لغوية", "", "", "", ""] },
+      { teacher: "عبدالغفار", periods: ["3م لغتي", "", "ن", "1م لغتي", "2م لغتي", "ن", ""] },
+      { teacher: "صالح", periods: ["ن", "4ب نشاط", "4ب دين", "", "", "4ب دين", ""] },
+      { teacher: "رائد", periods: ["1ث رياضيا", "2ث رياضيا", "3ث رياضيا", "", "", "", ""] },
+      { teacher: "علي الدعدي", periods: ["", "", "ن", "6ب لغتي", "4ب لغتي", "6ب مهارات", ""] },
+      { teacher: "احمد ردة", periods: ["5ب لغتي", "ن", "5ب دين", "", "", "", ""] },
+      { teacher: "احمد علي", periods: ["", "", "", "1م دين", "ن", "3م دين", "1م دين"] },
+      { teacher: "زياد", periods: ["2ث تاريخ", "1م اجتماع", "2م اجتماع", "", "", "", ""] },
+      { teacher: "سعود", periods: ["ن", "1ث تفكير", "ن", "", "", "", ""] },
+      { teacher: "العيافي", periods: ["", "4ب انجليز", "ن", "3ث إنجليز", "", "", ""] },
+      { teacher: "الادريسي", periods: ["", "", "", "", "1ث دين", "", "1ث دين"] },
+      { teacher: "غلام", periods: ["ن", "2م رياضيا", "", "1م رياضيا", "3م رياضيا", "", ""] },
+      { teacher: "إبراهيم", periods: ["", "3ث رقمية", "3م رقمية", "", "5ب رقمية", "6ب رقمية", "ن"] },
+      { teacher: "محمد الفقيه", periods: ["ن", "6ب دين", "", "", "", "", ""] },
+      { teacher: "يوسف", periods: ["4ب علوم", "5ب علوم", "5ب علوم", "", "", "", ""] },
+      { teacher: "احمد الخيري", periods: ["", "", "ن", "2م علوم", "3ث تنمية", "3ث تنمية", ""] },
+      { teacher: "ريان", periods: ["1م بدنية", "3م بدنية", "1ث بدنية", "ن", "ن", "3م بدنية", ""] },
+      { teacher: "هاشم", periods: ["", "6ب بدنية", "ن", "3ث نشاط", "2ث كيمياء", "", "1ث كيمياء"] },
+      { teacher: "مطر", periods: ["3ث ارض", "ن", "2ث نشاط", "", "", "", ""] },
+      { teacher: "راجح", periods: ["", "", "ن", "2ث فيزياء", "1م علوم", "", ""] },
+      { teacher: "مصطفى", periods: ["2م فنية", "ن", "2م فنية", "", "", "2م مهارات", ""] },
+      { teacher: "محمد حسن", periods: ["", "", "", "2ث انجليز", "3م انجليز", "1ث انجليز", "2ث انجليز"] }
+    ],
+    "الاثنين": [
+      { teacher: "عبدالمجيد", periods: ["5ب رياضيا", "6ب رياضيا", "ن", "4ب رياضيا", "", "", ""] },
+      { teacher: "محمد البركاتي", periods: ["", "2ث لغوية", "", "ن", "1ث لغوية", "1ث لغوية", ""] },
+      { teacher: "عبدالغفار", periods: ["", "1م لغتي", "2م لغتي", "ن", "", "3م لغتي", "ن"] },
+      { teacher: "صالح", periods: ["ن", "3م تفكير", "ن", "", "", "", ""] },
+      { teacher: "رائد", periods: ["1ث رياضيا", "ن", "2ث رياضيا", "3ث رياضيا", "", "", ""] },
+      { teacher: "علي الدعدي", periods: ["", "6ب لغتي", "ن", "4ب لغتي", "", "", ""] },
+      { teacher: "احمد ردة", periods: ["5ب نشاط", "ن", "ن", "5ب لغتي", "5ب دين", "5ب نشاط", ""] },
+      { teacher: "احمد علي", periods: ["2م دين", "3م دين", "2م دين", "", "", "", ""] },
+      { teacher: "زياد", periods: ["2ث تاريخ", "ن", "ن", "6ب اجتماع", "4ب اجتماع", "ن", ""] },
+      { teacher: "سعود", periods: ["", "", "", "3ث بحث", "ن", "3ث بحث", ""] },
+      { teacher: "العيافي", periods: ["4ب انجليز", "", "", "2م انجليز", "6ب انجليز", "1م انجليز", ""] },
+      { teacher: "الادريسي", periods: ["1ث دين", "", "", "", "", "", ""] },
+      { teacher: "غلام", periods: ["1م رياضيا", "اجتماع مهني", "", "3م رياضيا", "ن", "2م رياضيا", "2م رياضيا"] },
+      { teacher: "إبراهيم", periods: ["2م رقمية", "4ب رقمية", "", "", "", "", ""] },
+      { teacher: "محمد الفقيه", periods: ["", "", "مجتمع مهني", "", "6ب دين", "ن", "6ب دين"] },
+      { teacher: "يوسف", periods: ["6ب علوم", "", "", "مجتمع مهني", "5ب علوم", "ن", "6ب علوم"] },
+      { teacher: "احمد الخيري", periods: ["ن", "اجتماع مهني", "3ث تنمية", "", "", "", ""] },
+      { teacher: "ريان", periods: ["3ث بدنية", "4ب بدنية", "3م نشاط", "", "", "", ""] },
+      { teacher: "هاشم", periods: ["ن", "2ث كيمياء", "2ث كيمياء", "", "", "", ""] },
+      { teacher: "مطر", periods: ["3ث ارض", "", "مجتمع مهني", "1ث احياء", "2ث احياء", "2ث احياء", "1ث احياء"] },
+      { teacher: "راجح", periods: ["1م علوم", "1م نشاط", "3ث فيزياء", "مجتمع مهني", "", "1م علوم", "2ث فيزياء"] },
+      { teacher: "مصطفى", periods: ["5ب فنية", "ن", "1م فنية", "3م فنية", "ن", "ن", "4ب فنية"] },
+      { teacher: "محمد حسن", periods: ["3م انجليز", "اجتماع مهني", "1ث انجليز", "5ب انجليز", "", "", ""] }
+    ]
+  };
+
+  const dayData = timetable[day] || [];
+  if (dayData.length === 0) {
+    container.innerHTML = '<p class="text-center text-slate-400 py-8">لا توجد بيانات لهذا اليوم حالياً (تم إدخال الأحد فقط كمثال)</p>';
+    return;
+  }
+
+  let html = `<table class="w-full border-collapse text-[11px]">
+    <thead class="bg-cyan-50 dark:bg-cyan-950">
+      <tr>
+        <th class="p-2 border text-right">المعلم</th>
+        <th class="p-2 border text-center">1</th>
+        <th class="p-2 border text-center">2</th>
+        <th class="p-2 border text-center">3</th>
+        <th class="p-2 border text-center">4</th>
+        <th class="p-2 border text-center">5</th>
+        <th class="p-2 border text-center">6</th>
+        <th class="p-2 border text-center">7</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  dayData.forEach(t => {
+    html += `<tr class="border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
+      <td class="p-2 font-bold border">${t.teacher}</td>
+      ${t.periods.map(p => `<td class="p-2 text-center border">${p || '-'}</td>`).join('')}
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const main = document.querySelector('.main-content');
+  const isMobile = window.innerWidth <= 1024;
+
+  if (isMobile) {
+    sidebar.classList.toggle('open');
+  } else {
+    sidebar.classList.toggle('closed');
+    if (main) main.classList.toggle('expanded');
+  }
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('themeIcon').textContent = '☀️';
+  }
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('themeIcon').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+}
+
+function initUsers() {
+  const saved = localStorage.getItem(STORAGE_KEY_USERS);
+  if (saved) {
+    try { users = JSON.parse(saved); } catch(e) { users = DEFAULT_USERS; }
+  } else {
+    users = DEFAULT_USERS;
+    localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+  }
+}
+
+async function initStudents() {
+  const saved = localStorage.getItem(STORAGE_KEY_STUDENTS);
+  if (saved) {
+    try { students = JSON.parse(saved); } catch(e) { students = DEFAULT_STUDENTS; }
+  } else {
+    students = DEFAULT_STUDENTS;
+  }
+  filtered = [...students];
+  await fetchCloudStudentsData();
+}
+
+async function fetchCloudStudentsData() {
+  const badge = document.getElementById('syncStatusBadge');
+  if (badge) {
+    badge.textContent = '🔄 جاري المزامنة...';
+    badge.className = 'mt-1 inline-block px-3 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800';
+  }
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) {
+      // Extract templates if present
+      const cleaned = extractTemplatesFromStudents(data);
+      // Always merge local absences backup (prefer local if cloud is empty or missing)
+      const localAbs = JSON.parse(localStorage.getItem('absences_backup') || '{}');
+      students = cleaned.map(s => {
+        const key = (s.student_id || s.name || '') + '';
+        const cloudAbs = s.absences || [];
+        const localAbsForStudent = localAbs[key] || [];
+        // Prefer the longer/more complete list
+        if (localAbsForStudent.length > cloudAbs.length) {
+          s.absences = localAbsForStudent;
+        } else if (cloudAbs.length > 0) {
+          s.absences = cloudAbs;
+        }
+        return s;
+      });
+      localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+      // Update backup with whatever we have now
+      const newBackup = {};
+      students.forEach(s => {
+        if (s.absences && s.absences.length > 0) {
+          const key = (s.student_id || s.name || '') + '';
+          newBackup[key] = s.absences;
+        }
+      });
+      localStorage.setItem('absences_backup', JSON.stringify(newBackup));
+    } else {
+      students = DEFAULT_STUDENTS;
+      saveStudentsData();
+    }
+    if (badge) {
+      badge.textContent = '✅ البيانات متزامنة مع Google Sheets';
+      badge.className = 'mt-1 inline-block px-3 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800';
+    }
+  } catch (e) {
+    if (badge) {
+      badge.textContent = '⚠️ تعمل بالوضع المحلي';
+      badge.className = 'mt-1 inline-block px-3 py-0.5 rounded-full text-[11px] font-bold bg-red-100 text-red-800';
+    }
+  }
+  filtered = [...students];
+  render();
+}
+
+async function saveStudentsData() {
+  localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+  render();
+  try {
+    // Embed templates
+    const templatesEntry = {
+      name: '__TEMPLATES__',
+      class_name: '__SYSTEM__',
+      student_id: 'templates',
+      student_phone: '',
+      guardian: JSON.stringify(messageTemplates),
+      guardian_phone: '',
+      guardian_id: '',
+      logs: [],
+      absences: []
+    };
+    // Embed absences backup as well
+    const absBackup = JSON.parse(localStorage.getItem('absences_backup') || '{}');
+    const absencesEntry = {
+      name: '__ABSENCES__',
+      class_name: '__SYSTEM__',
+      student_id: 'absences',
+      student_phone: '',
+      guardian: JSON.stringify(absBackup),
+      guardian_phone: '',
+      guardian_id: '',
+      logs: [],
+      absences: []
+    };
+    const toSave = [...students.filter(s => !['__TEMPLATES__','__ABSENCES__'].includes(s.name)), templatesEntry, absencesEntry];
+    await fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'saveAll', students: toSave })
+    });
+  } catch (e) {}
+}
+
+function saveUsersData() {
+  localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+}
+
+function fillLogin(username, password) {
+  document.getElementById('loginUsername').value = username;
+  document.getElementById('loginPassword').value = password;
+  // تسجيل دخول تلقائي للتجربة السريعة
+  setTimeout(() => {
+    const form = document.querySelector('#loginScreen form');
+    if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+  }, 100);
+}
+
+function handleLogin(event) {
+  event.preventDefault();
+  const u = document.getElementById('loginUsername').value.trim();
+  const p = document.getElementById('loginPassword').value.trim();
+
+  const user = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
+  if (user) {
+    currentUser = user;
+    localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(user));
+    document.getElementById('loginError').classList.add('hidden');
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appContainer').classList.remove('hidden');
+    setupPermissionsUI();
+    fetchCloudStudentsData();
+  } else {
+    document.getElementById('loginError').classList.remove('hidden');
+  }
+}
+
+function checkAuth() {
+  const session = localStorage.getItem(STORAGE_KEY_AUTH);
+  if (session) {
+    try {
+      const user = JSON.parse(session);
+      const valid = users.find(x => x.username.toLowerCase() === (user.username || '').toLowerCase());
+      if (valid) {
+        currentUser = valid;
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('appContainer').classList.remove('hidden');
+        setupPermissionsUI();
+        render();
+        return;
+      }
+    } catch(e) {}
+  }
+  // مسح الجلسة غير الصالحة
+  localStorage.removeItem(STORAGE_KEY_AUTH);
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('appContainer').classList.add('hidden');
+}
+
+function handleLogout() {
+  currentUser = null;
+  localStorage.removeItem(STORAGE_KEY_AUTH);
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('appContainer').classList.add('hidden');
+}
+
+function setupPermissionsUI() {
+  if (!currentUser) return;
+
+  const role = currentUser.role;
+  document.getElementById('currentUserName').textContent = currentUser.fullname;
+  document.getElementById('currentUserRole').textContent = ROLES[role]?.name || role;
+  document.getElementById('currentUserRole').className = `text-[11px] px-2 py-0.5 rounded-md inline-block font-medium ${ROLES[role]?.badge || ''}`;
+
+  if (role === 'admin') {
+    document.getElementById('manageUsersBtn').classList.remove('hidden');
+    document.getElementById('backupBtn').classList.remove('hidden');
+    document.getElementById('restoreBtn').classList.remove('hidden');
+  } else if (role === 'vice') {
+    document.getElementById('manageUsersBtn').classList.add('hidden');
+    document.getElementById('backupBtn').classList.remove('hidden');
+    document.getElementById('restoreBtn').classList.remove('hidden');
+  } else {
+    document.getElementById('manageUsersBtn').classList.add('hidden');
+    document.getElementById('backupBtn').classList.add('hidden');
+    document.getElementById('restoreBtn').classList.add('hidden');
+  }
+
+  if (role === 'admin' || role === 'vice') {
+    document.getElementById('addStudentBtn').classList.remove('hidden');
+  } else {
+    document.getElementById('addStudentBtn').classList.add('hidden');
+  }
+
+  if (role === 'admin' || role === 'vice' || role === 'counselor') {
+    document.getElementById('templatesBtn').classList.remove('hidden');
+  } else {
+    document.getElementById('templatesBtn').classList.add('hidden');
+  }
+
+  // Bulk message
+  if (role === 'admin' || role === 'vice' || role === 'counselor') {
+    document.getElementById('bulkMsgBtn').classList.remove('hidden');
+  } else {
+    document.getElementById('bulkMsgBtn').classList.add('hidden');
+  }
+
+  // Absence recording: admin, vice, counselor, absence_officer
+  if (role === 'admin' || role === 'vice' || role === 'counselor' || role === 'absence_officer') {
+    document.getElementById('absenceBtn').classList.remove('hidden');
+    document.getElementById('notifyAbsenteesBtn').classList.remove('hidden');
+  } else {
+    document.getElementById('absenceBtn').classList.add('hidden');
+    document.getElementById('notifyAbsenteesBtn').classList.add('hidden');
+  }
+
+  // Absence report: everyone except if we want, but show to all non-admin? 
+  // According to request: all users except admin see the report. Admin sees everything anyway.
+  // Practical: show report to everyone.
+  document.getElementById('absenceReportBtn').classList.remove('hidden');
+
+  // For absence_officer: hide other management buttons
+  if (role === 'absence_officer') {
+    document.getElementById('addStudentBtn').classList.add('hidden');
+    document.getElementById('backupBtn').classList.add('hidden');
+    document.getElementById('restoreBtn').classList.add('hidden');
+    document.getElementById('manageUsersBtn').classList.add('hidden');
+    document.getElementById('bulkMsgBtn').classList.add('hidden');
+    // Optionally hide search or keep view
+  }
+
+  if (role === 'teacher') {
+    document.getElementById('addLogSection').classList.add('hidden');
+  } else {
+    document.getElementById('addLogSection').classList.remove('hidden');
+  }
+
+  // Alert for today absences
+  setTimeout(checkTodayAbsencesAlert, 500);
+}
+
+function doSearch() {
+  currentPage = 1;
+  const name = document.getElementById('searchName').value.trim().toLowerCase();
+  const id = document.getElementById('searchId').value.trim();
+  const cls = document.getElementById('searchClass').value;
+
+  filtered = students.filter(s => {
+    const matchName = !name || (s.name || '').toLowerCase().includes(name);
+    const matchId = !id || String(s.student_id || '').includes(id) || String(s.guardian_id || '').includes(id);
+    const matchClass = !cls || s.class_name === cls;
+    return matchName && matchId && matchClass;
+  });
+  render();
+}
+
+function resetSearch() {
+  currentPage = 1;
+  document.getElementById('searchName').value = '';
+  document.getElementById('searchId').value = '';
+  document.getElementById('searchClass').value = '';
+  filtered = [...students];
+  render();
+}
+
+function toggleView() {
+  isCardsView = !isCardsView;
+  render();
+}
+
+function render() {
+  const tbody = document.getElementById('tableBody');
+  const cardsView = document.getElementById('cardsView');
+  const tableView = document.getElementById('tableView');
+  const empty = document.getElementById('emptyMsg');
+  const btn = document.getElementById('viewToggle');
+
+  document.getElementById('totalCount').textContent = students.length;
+  document.getElementById('resultCount').textContent = filtered.length;
+  document.getElementById('withPhone').textContent = students.filter(s => s.guardian_phone).length;
+  document.getElementById('contacted').textContent = students.filter(s => s.logs && s.logs.length > 0).length;
+
+  // Today absences
+  const today = new Date().toISOString().split('T')[0];
+  const todayAbs = students.filter(s => (s.absences || []).some(a => a.date === today)).length;
+  const absEl = document.getElementById('todayAbsences');
+  if (absEl) absEl.textContent = todayAbs;
+
+  if (isCardsView) {
+    tableView.classList.add('hidden');
+    cardsView.classList.remove('hidden');
+    if (btn) btn.textContent = '📊 عرض جدول';
+  } else {
+    tableView.classList.remove('hidden');
+    cardsView.classList.add('hidden');
+    if (btn) btn.textContent = '📋 عرض بطاقات';
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    cardsView.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  const role = currentUser?.role || 'teacher';
+  const start = 0;
+  const end = Math.min(currentPage * pageSize, filtered.length);
+  const pageItems = filtered.slice(start, end);
+
+  try {
+  tbody.innerHTML = pageItems.map(s => {
+    const idx = students.indexOf(s);
+    const phone = String(s.guardian_phone || '').replace(/\D/g, '');
+
+    let waBtn = '';
+    const canUseWa = phone && phone.length >= 9 && (role === 'admin' || role === 'vice' || role === 'counselor');
+    if (canUseWa) {
+      waBtn = `<button class="px-2 py-1 bg-emerald-600 text-white rounded text-[11px] font-bold" onclick="openWaModal('${phone}', '${escapeHtml(s.name)}', '${escapeHtml(s.guardian)}')">💬 واتساب</button>`;
+    } else if (!phone) {
+      waBtn = `<span class="text-slate-400 text-[10px]">بلا جوال</span>`;
+    }
+
+    let editBtn = (role === 'admin' || role === 'vice') ? `<button class="px-2 py-1 bg-blue-600 text-white rounded text-[11px] font-bold" onclick="editStudent(${idx})">✏️ تعديل</button>` : '';
+    let delBtn = (role === 'admin') ? `<button class="px-2 py-1 bg-red-600 text-white rounded text-[11px] font-bold" onclick="deleteStudent(${idx})">🗑️ حذف</button>` : '';
+
+    return `
+      <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+        <td class="p-3 font-semibold">${s.name || '-'}</td>
+        <td class="p-3">${s.class_name || '-'}</td>
+        <td class="p-3">${s.student_id || '-'}</td>
+        <td class="p-3">${s.student_phone || '-'}</td>
+        <td class="p-3">${s.guardian || '-'}</td>
+        <td class="p-3">${s.guardian_phone || '-'}</td>
+        <td class="p-3">${s.guardian_id || '-'}</td>
+        <td class="p-3 text-center no-print whitespace-nowrap">
+          <div class="flex items-center justify-center gap-1">
+            ${waBtn}
+            <button class="px-2 py-1 bg-purple-600 text-white rounded text-[11px] font-bold" onclick="openLogModal(${idx})">📋 إجراءات</button>
+            ${editBtn}
+            ${delBtn}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  cardsView.innerHTML = pageItems.map(s => {
+    const idx = students.indexOf(s);
+    const phone = String(s.guardian_phone || '').replace(/\D/g, '');
+
+    let waBtn = '';
+    const canUseWa = phone && phone.length >= 9 && (role === 'admin' || role === 'vice' || role === 'counselor');
+    if (canUseWa) {
+      waBtn = `<button class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold" onclick="openWaModal('${phone}', '${escapeHtml(s.name)}', '${escapeHtml(s.guardian)}')">💬 واتساب</button>`;
+    }
+
+    let editBtn = (role === 'admin' || role === 'vice') ? `<button class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold" onclick="editStudent(${idx})">✏️ تعديل</button>` : '';
+    let delBtn = (role === 'admin') ? `<button class="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold" onclick="deleteStudent(${idx})">🗑️ حذف</button>` : '';
+
+    return `
+      <div class="card-style rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow relative">
+        <div class="flex justify-between items-start mb-2">
+          <h3 class="font-extrabold text-blue-900 dark:text-blue-300 text-base">${s.name || '-'}</h3>
+          <span class="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 text-[10px] px-2 py-0.5 rounded font-bold">${s.class_name || '-'}</span>
+        </div>
+        <div class="space-y-1 text-xs text-slate-600 dark:text-slate-400 mb-4">
+          <p><strong>الهوية:</strong> ${s.student_id || '-'}</p>
+          <p><strong>ولي الأمر:</strong> ${s.guardian || '-'}</p>
+          <p><strong>جوال ولي الأمر:</strong> ${s.guardian_phone || '-'}</p>
+        </div>
+        <div class="flex flex-wrap gap-1.5 pt-3 border-t dark:border-slate-700 no-print">
+          ${waBtn}
+          <button class="px-2.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold" onclick="openLogModal(${idx})">📋 إجراءات</button>
+          ${editBtn}
+          ${delBtn}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // أزرار الصفحات
+  if (end < filtered.length) {
+    const moreBtn = document.createElement('div');
+    moreBtn.className = 'col-span-full text-center mt-4';
+    moreBtn.innerHTML = `<button onclick="currentPage++; render();" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold">عرض المزيد (${filtered.length - end} متبقي)</button>`;
+    if (isCardsView) {
+      cardsView.appendChild(moreBtn);
+    } else {
+      // for table we can add below
+    }
+  }
+  } catch (err) {
+    console.error('Render error:', err);
+    cardsView.innerHTML = '<div class="col-span-full text-center py-8 text-red-500">حدث خطأ في عرض البيانات. جرب تحديث الصفحة.</div>';
+  }
+}
+
+function escapeHtml(str) {
+  return (str || '').replace(/'/g, "\\'");
+}
+
+function openAddModal() {
+  editIndex = -1;
+  document.getElementById('modalTitle').textContent = 'إضافة طالب جديد';
+  document.getElementById('f_name').value = '';
+  document.getElementById('f_class').value = '';
+  document.getElementById('f_student_id').value = '';
+  document.getElementById('f_student_phone').value = '';
+  document.getElementById('f_guardian').value = '';
+  document.getElementById('f_guardian_phone').value = '';
+  document.getElementById('f_guardian_id').value = '';
+  document.getElementById('editModal').classList.add('show');
+}
+
+function editStudent(index) {
+  editIndex = index;
+  const s = students[index];
+  document.getElementById('modalTitle').textContent = 'تعديل بيانات الطالب';
+  document.getElementById('f_name').value = s.name || '';
+  document.getElementById('f_class').value = s.class_name || '';
+  document.getElementById('f_student_id').value = s.student_id || '';
+  document.getElementById('f_student_phone').value = s.student_phone || '';
+  document.getElementById('f_guardian').value = s.guardian || '';
+  document.getElementById('f_guardian_phone').value = s.guardian_phone || '';
+  document.getElementById('f_guardian_id').value = s.guardian_id || '';
+  document.getElementById('editModal').classList.add('show');
+}
+
+function saveStudent(event) {
+  event.preventDefault();
+  const data = {
+    name: document.getElementById('f_name').value.trim(),
+    class_name: document.getElementById('f_class').value.trim(),
+    student_id: document.getElementById('f_student_id').value.trim(),
+    student_phone: document.getElementById('f_student_phone').value.trim(),
+    guardian: document.getElementById('f_guardian').value.trim(),
+    guardian_phone: document.getElementById('f_guardian_phone').value.trim(),
+    guardian_id: document.getElementById('f_guardian_id').value.trim()
+  };
+
+  if (editIndex >= 0) {
+    data.logs = students[editIndex].logs || [];
+    students[editIndex] = data;
+  } else {
+    data.logs = [];
+    students.push(data);
+  }
+
+  saveStudentsData();
+  doSearch();
+  closeModal('editModal');
+}
+
+function deleteStudent(index) {
+  if (currentUser?.role !== 'admin') return;
+  if (confirm('هل أنت متأكد من حذف هذا الطالب نهائياً؟')) {
+    students.splice(index, 1);
+    saveStudentsData();
+    doSearch();
+  }
+}
+
+function openWaModal(phone, studentName, guardianName) {
+  currentWaPhone = phone;
+  currentLogIndex = students.findIndex(s => s.name === studentName && String(s.guardian_phone||'').replace(/\D/g,'') === phone);
+  document.getElementById('waStudent').textContent = studentName;
+  document.getElementById('waGuardian').textContent = guardianName;
+  
+  const container = document.getElementById('waMessages');
+  container.innerHTML = messageTemplates.map((msg, idx) => {
+    const finalMsg = msg.replace('{student}', studentName);
+    return `<button class="w-full text-right p-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg text-xs font-semibold transition-colors" onclick="sendWa(${idx})">${finalMsg}</button>`;
+  }).join('');
+  document.getElementById('waModal').classList.add('show');
+}
+
+function sendWa(index) {
+  const studentName = document.getElementById('waStudent').textContent;
+  const fullMsg = messageTemplates[index].replace('{student}', studentName);
+  const msg = encodeURIComponent(fullMsg);
+  window.open(`https://wa.me/${currentWaPhone}?text=${msg}`, '_blank');
+
+  if (currentLogIndex >= 0) {
+    const s = students[currentLogIndex];
+    if (!s.logs) s.logs = [];
+    const now = new Date();
+    const dateStr = now.toLocaleString('ar-SA', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+    s.logs.push({
+      date: dateStr,
+      message: fullMsg,
+      replied: false,
+      notes: '',
+      user: currentUser?.fullname || 'مستخدم'
+    });
+    saveStudentsData();
+  }
+  closeModal('waModal');
+}
+
+function openLogModal(index) {
+  currentLogIndex = index;
+  const s = students[index];
+  if (!s.logs) s.logs = [];
+
+  document.getElementById('logStudent').textContent = s.name || '';
+  document.getElementById('logGuardian').textContent = s.guardian || '';
+  
+  const sel = document.getElementById('logMessageSelect');
+  sel.innerHTML = messageTemplates.map((m, i) => `<option value="${i}">${m.replace('{student}', s.name||'')}</option>`).join('');
+  document.getElementById('logReplied').checked = false;
+
+  renderLogs();
+  document.getElementById('logModal').classList.add('show');
+}
+
+function renderLogs() {
+  const s = students[currentLogIndex];
+  const container = document.getElementById('logList');
+  const canEditLog = currentUser?.role !== 'teacher';
+
+  if (!s.logs || s.logs.length === 0) {
+    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">لا يوجد سجل تواصل مسجل لهذا الطالب بعد.</p>';
+    return;
+  }
+
+  container.innerHTML = s.logs.slice().reverse().map((log, revIdx) => {
+    const realIdx = s.logs.length - 1 - revIdx;
+    return `
+      <div class="p-3 rounded-xl border dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 text-xs">
+        <div class="flex justify-between items-start mb-1">
+          <span class="font-bold text-blue-700 dark:text-blue-400">${log.date}</span>
+          <span class="text-[10px] text-slate-400">بواسطة: ${log.user || 'المسؤول'}</span>
+        </div>
+        <p class="mb-2"><strong>الرسالة:</strong> ${log.message}</p>
+        <div class="flex items-center gap-2 mb-2">
+          ${canEditLog ? `
+            <button class="px-2 py-1 rounded text-[11px] font-bold ${log.replied ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-700'}" onclick="toggleReplied(${realIdx}, true)">تم الرد ✓</button>
+            <button class="px-2 py-1 rounded text-[11px] font-bold ${!log.replied ? 'bg-red-600 text-white' : 'bg-slate-200 dark:bg-slate-700'}" onclick="toggleReplied(${realIdx}, false)">لم يتم الرد</button>
+          ` : `
+            <span class="font-bold ${log.replied ? 'text-emerald-600' : 'text-red-600'}">${log.replied ? 'تم الرد' : 'لم يتم الرد'}</span>
+          `}
+        </div>
+        <textarea ${!canEditLog ? 'disabled' : ''} placeholder="إضافة ملاحظات ولي الأمر..." class="w-full p-2 rounded border dark:bg-slate-800 dark:border-slate-700 text-xs" onchange="updateNotes(${realIdx}, this.value)">${log.notes || ''}</textarea>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleReplied(logIndex, setTo) {
+  if (currentUser?.role === 'teacher') return;
+  const s = students[currentLogIndex];
+  s.logs[logIndex].replied = setTo;
+  saveStudentsData();
+  renderLogs();
+}
+
+function updateNotes(logIndex, value) {
+  if (currentUser?.role === 'teacher') return;
+  const s = students[currentLogIndex];
+  s.logs[logIndex].notes = value;
+  saveStudentsData();
+}
+
+function addLogEntry() {
+  if (currentUser?.role === 'teacher') return;
+  const s = students[currentLogIndex];
+  if (!s.logs) s.logs = [];
+  const msgIndex = document.getElementById('logMessageSelect').value;
+  const message = messageTemplates[msgIndex].replace('{student}', s.name || '');
+  const replied = document.getElementById('logReplied').checked;
+  const now = new Date();
+  const dateStr = now.toLocaleString('ar-SA', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+
+  s.logs.push({
+    date: dateStr,
+    message,
+    replied,
+    notes: '',
+    user: currentUser?.fullname || 'المسؤول'
+  });
+
+  saveStudentsData();
+  renderLogs();
+  document.getElementById('logReplied').checked = false;
+}
+
+function printStudentReport() {
+  const s = students[currentLogIndex];
+  if (!s) return;
+
+  const logs = (s.logs || []).slice().reverse();
+  const total = logs.length;
+  const replied = logs.filter(l => l.replied).length;
+  const notReplied = total - replied;
+
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>تقرير تواصل - ${s.name}</title>
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; padding: 30px; color: #1e293b; }
+        h1 { text-align: center; color: #1e40af; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #64748b; margin-bottom: 25px; }
+        .info { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size:14px; }
+        .info p { margin: 4px 0; }
+        .summary { display: flex; gap: 20px; margin-bottom: 20px; font-size:14px; }
+        .summary div { background: #eff6ff; padding: 10px 15px; border-radius: 8px; font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size:13px; }
+        th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: right; }
+        th { background: #1e40af; color: white; }
+        .replied { color: #16a34a; font-weight: 600; }
+        .not-replied { color: #dc2626; font-weight: 600; }
+      </style>
+    </head>
+    <body>
+      <div style="text-align:center; margin-bottom:20px;">
+        <h2 style="margin:0; color:#1e40af;">مجمع يلملم التعليمي</h2>
+        <h1 style="margin:5px 0; font-size:1.4rem;">تقرير التواصل الرسمي مع ولي الأمر</h1>
+      </div>
+      <div class="info">
+        <p><strong>اسم الطالب:</strong> ${s.name || '-'}</p>
+        <p><strong>الفصل الدراسي:</strong> ${s.class_name || '-'}</p>
+        <p><strong>ولي الأمر:</strong> ${s.guardian || '-'}</p>
+        <p><strong>رقم جوال ولي الأمر:</strong> ${s.guardian_phone || '-'}</p>
+      </div>
+      <div class="summary">
+        <div>إجمالي محاولات التواصل: ${total}</div>
+        <div style="background:#dcfce7; color:#166534;">تم الرد: ${replied}</div>
+        <div style="background:#fee2e2; color:#991b1b;">لم يتم الرد: ${notReplied}</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>التاريخ والوقت</th>
+            <th>موضوع التواصل / الرسالة</th>
+            <th>الحالة</th>
+            <th>المسؤول</th>
+            <th>ملاحظات</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${logs.length === 0 ? '<tr><td colspan="5" style="text-align:center;">لا يوجد سجل تواصل مسجل.</td></tr>' : logs.map(log => `
+            <tr>
+              <td>${log.date}</td>
+              <td>${log.message}</td>
+              <td class="${log.replied ? 'replied' : 'not-replied'}">${log.replied ? 'تم الرد' : 'لم يتم الرد'}</td>
+              <td>${log.user || '-'}</td>
+              <td>${log.notes || '-'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      <div style="display:flex; justify-content:space-around; margin-top:60px; text-align:center; font-size:14px;">
+        <div>
+          <p style="margin-bottom:40px; font-weight:bold;">الموجه الطلابي</p>
+          <p>أ. إبراهيم عطيه الزهراني</p>
+          <p style="margin-top:30px; border-top:1px solid #000; width:160px; margin-left:auto; margin-right:auto;">التوقيع</p>
+        </div>
+        <div>
+          <p style="margin-bottom:40px; font-weight:bold;">وكيل الطلاب</p>
+          <p>أ. عبدالعزيز امبارك الفهمي</p>
+          <p style="margin-top:30px; border-top:1px solid #000; width:160px; margin-left:auto; margin-right:auto;">التوقيع</p>
+        </div>
+        <div>
+          <p style="margin-bottom:40px; font-weight:bold;">مدير المجمع</p>
+          <p>أ. محمد بن علي الفهمي</p>
+          <p style="margin-top:30px; border-top:1px solid #000; width:160px; margin-left:auto; margin-right:auto;">التوقيع</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => printWindow.print(), 300);
+}
+
+function openUsersModal() {
+  if (currentUser?.role !== 'admin') return;
+  renderUsersTable();
+  closeUserForm();
+  document.getElementById('usersModal').classList.add('show');
+}
+
+function renderUsersTable() {
+  const tbody = document.getElementById('usersTableBody');
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td class="p-2.5 font-bold">${u.username}</td>
+      <td class="p-2.5">${u.fullname}</td>
+      <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${ROLES[u.role]?.badge || ''}">${ROLES[u.role]?.name || u.role}</span></td>
+      <td class="p-2.5 text-center">
+        <button onclick="openEditUserForm('${u.username}')" class="px-2 py-1 bg-blue-600 text-white rounded text-[10px] font-bold">تعديل</button>
+        ${u.username !== 'admin' ? `<button onclick="deleteUserAccount('${u.username}')" class="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-bold">حذف</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openAddUserForm() {
+  editingUserUsername = null;
+  document.getElementById('userFormTitle').textContent = 'إضافة حساب جديد';
+  document.getElementById('u_username').value = '';
+  document.getElementById('u_username').disabled = false;
+  document.getElementById('u_password').value = '';
+  document.getElementById('u_fullname').value = '';
+  document.getElementById('u_role').value = 'teacher';
+  document.getElementById('userFormContainer').classList.remove('hidden');
+}
+
+function openEditUserForm(username) {
+  const u = users.find(x => x.username === username);
+  if (!u) return;
+  editingUserUsername = username;
+  document.getElementById('userFormTitle').textContent = 'تعديل بيانات الحساب';
+  document.getElementById('u_username').value = u.username;
+  document.getElementById('u_username').disabled = true;
+  document.getElementById('u_password').value = u.password;
+  document.getElementById('u_fullname').value = u.fullname;
+  document.getElementById('u_role').value = u.role;
+  document.getElementById('userFormContainer').classList.remove('hidden');
+}
+
+function closeUserForm() {
+  document.getElementById('userFormContainer').classList.add('hidden');
+}
+
+function saveUserAccount(event) {
+  event.preventDefault();
+  const username = document.getElementById('u_username').value.trim();
+  const password = document.getElementById('u_password').value.trim();
+  const fullname = document.getElementById('u_fullname').value.trim();
+  const role = document.getElementById('u_role').value;
+
+  if (editingUserUsername) {
+    const idx = users.findIndex(x => x.username === editingUserUsername);
+    if (idx >= 0) {
+      users[idx] = { username: editingUserUsername, password, fullname, role };
+    }
+  } else {
+    if (users.some(x => x.username.toLowerCase() === username.toLowerCase())) {
+      alert('اسم المستخدم هذا موجود بالفعل!');
+      return;
+    }
+    users.push({ username, password, fullname, role });
+  }
+
+  saveUsersData();
+  renderUsersTable();
+  closeUserForm();
+}
+
+function deleteUserAccount(username) {
+  if (username === 'admin') {
+    alert('لا يمكن حذف حساب المدير الرئيسي النظام!');
+    return;
+  }
+  if (confirm(`هل أنت متأكد من حذف الحساب "${username}"؟`)) {
+    users = users.filter(x => x.username !== username);
+    saveUsersData();
+    renderUsersTable();
+  }
+}
+
+function exportCSV() {
+  const headers = ['اسم الطالب','الفصل','هوية الطالب','الجوال','ولي الأمر','جوال ولي الأمر','هوية ولي الأمر'];
+  const rows = filtered.map(s => [
+    s.name, s.class_name, s.student_id, s.student_phone,
+    s.guardian, s.guardian_phone, s.guardian_id
+  ]);
+  let csv = '\uFEFF' + headers.join(',') + '\n';
+  csv += rows.map(r => r.map(c => '"' + (c||'').replace(/"/g,'""') + '"').join(',')).join('\n');
+  downloadFile(csv, 'students_yalamlal.csv', 'text/csv;charset=utf-8');
+}
+
+function exportJSON() {
+  downloadFile(JSON.stringify(filtered, null, 2), 'students_yalamlal.json', 'application/json');
+}
+
+function exportBackup() {
+  if (currentUser?.role !== 'admin' && currentUser?.role !== 'vice') return;
+  const backup = {
+    students: students,
+    users: users,
+    exportDate: new Date().toISOString(),
+    school: "مجمع يلملم التعليمي"
+  };
+  downloadFile(JSON.stringify(backup, null, 2), `نسخة_احتياطية_مجمع_يلملم_${new Date().toLocaleDateString('ar-SA').replace(/\//g,'-')}.json`, 'application/json');
+}
+
+function importBackup(event) {
+  if (currentUser?.role !== 'admin' && currentUser?.role !== 'vice') return;
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      let importedStudents = data.students || data;
+      if (!Array.isArray(importedStudents)) throw new Error('ملف غير صالح');
+      if (confirm(`سيتم استبدال بيانات الطلاب الحالية بـ ${importedStudents.length} طالب. هل أنت متأكد؟`)) {
+        students = importedStudents;
+        if (Array.isArray(data.users) && currentUser?.role === 'admin') {
+          users = data.users;
+          saveUsersData();
+        }
+        saveStudentsData();
+        filtered = [...students];
+        render();
+        alert('تمت استعادة النسخة الاحتياطية بنجاح!');
+      }
+    } catch (err) {
+      alert('خطأ في قراءة ملف النسخة الاحتياطية.');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+// ===== Bulk Messaging =====
+function openBulkModal() {
+  if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'vice' && currentUser.role !== 'counselor')) return;
+  
+  // Fill class select
+  const classSelect = document.getElementById('bulkClassSelect');
+  const classes = [...new Set(students.map(s => s.class_name).filter(Boolean))].sort();
+  classSelect.innerHTML = '<option value="">-- اختر الفصل --</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
+  
+  // Fill message select
+  const msgSelect = document.getElementById('bulkMessageSelect');
+  msgSelect.innerHTML = messageTemplates.map((m, i) => `<option value="${i}">${m}</option>`).join('');
+  
+  // Reset
+  document.getElementById('bulkResult').classList.add('hidden');
+  document.getElementById('bulkSendList').innerHTML = '';
+  toggleBulkMode();
+  document.getElementById('bulkModal').classList.add('show');
+}
+
+function toggleBulkMode() {
+  const mode = document.querySelector('input[name="bulkMode"]:checked').value;
+  document.getElementById('classMode').classList.toggle('hidden', mode !== 'class');
+  document.getElementById('manualMode').classList.toggle('hidden', mode !== 'manual');
+  if (mode === 'manual') renderBulkStudentsList();
+}
+
+function renderBulkStudentsList() {
+  const container = document.getElementById('bulkStudentsList');
+  const search = (document.getElementById('bulkSearch')?.value || '').toLowerCase();
+  container.innerHTML = students
+    .filter(s => !search || (s.name || '').toLowerCase().includes(search))
+    .map((s, i) => {
+      const phone = String(s.guardian_phone || '').replace(/\D/g, '');
+      const hasPhone = phone.length >= 9;
+      return `<label class="flex items-center gap-2 p-1 hover:bg-slate-50 dark:hover:bg-slate-800 rounded ${hasPhone ? '' : 'opacity-50'}">
+        <input type="checkbox" class="bulk-student-cb" data-index="${students.indexOf(s)}" ${hasPhone ? '' : 'disabled'}>
+        <span>${s.name || '-'} <span class="text-slate-400">(${s.class_name || '-'})</span> ${hasPhone ? '' : '- بلا جوال'}</span>
+      </label>`;
+    }).join('');
+}
+
+function filterBulkStudents() {
+  renderBulkStudentsList();
+}
+
+function prepareBulkList() {
+  const mode = document.querySelector('input[name="bulkMode"]:checked').value;
+  const msgIndex = document.getElementById('bulkMessageSelect').value;
+  let selected = [];
+
+  if (mode === 'class') {
+    const cls = document.getElementById('bulkClassSelect').value;
+    if (!cls) { alert('اختر الفصل أولاً'); return; }
+    selected = students.filter(s => s.class_name === cls);
+  } else {
+    document.querySelectorAll('.bulk-student-cb:checked').forEach(cb => {
+      const idx = parseInt(cb.dataset.index);
+      if (!isNaN(idx)) selected.push(students[idx]);
+    });
+  }
+
+  selected = selected.filter(s => {
+    const phone = String(s.guardian_phone || '').replace(/\D/g, '');
+    return phone.length >= 9;
+  });
+
+  if (selected.length === 0) {
+    alert('لا يوجد طلاب لديهم أرقام جوال صالحة في التحديد');
+    return;
+  }
+
+  const container = document.getElementById('bulkSendList');
+  container.innerHTML = selected.map(s => {
+    const phone = String(s.guardian_phone || '').replace(/\D/g, '');
+    const msg = messageTemplates[msgIndex].replace('{student}', s.name || '');
+    const encoded = encodeURIComponent(msg);
+    return `
+      <div class="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded border dark:border-slate-700">
+        <div class="text-xs">
+          <div class="font-bold">${s.name}</div>
+          <div class="text-slate-500">${s.guardian || '-'} - ${phone}</div>
+        </div>
+        <button onclick="sendBulkOne('${phone}', '${escapeHtml(s.name)}', ${msgIndex})" class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded">إرسال</button>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('bulkCount').textContent = selected.length;
+  document.getElementById('bulkResult').classList.remove('hidden');
+}
+
+function sendBulkOne(phone, studentName, msgIndex) {
+  const msg = messageTemplates[msgIndex].replace('{student}', studentName);
+  const encoded = encodeURIComponent(msg);
+  window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
+
+  // Log the communication
+  const idx = students.findIndex(s => s.name === studentName && String(s.guardian_phone||'').replace(/\D/g,'') === phone);
+  if (idx >= 0) {
+    if (!students[idx].logs) students[idx].logs = [];
+    const now = new Date();
+    const dateStr = now.toLocaleString('ar-SA', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+    students[idx].logs.push({
+      date: dateStr,
+      message: msg,
+      replied: false,
+      notes: 'رسالة جماعية',
+      user: currentUser?.fullname || 'المسؤول'
+    });
+    saveStudentsData();
+  }
+}
+
+
+// ===== Absence System =====
+function openAbsenceModal() {
+  if (!currentUser || !['admin','vice','counselor','absence_officer'].includes(currentUser.role)) return;
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('absenceDate').value = today;
+  
+  const classSelect = document.getElementById('absenceClass');
+  const classes = [...new Set(students.map(s => s.class_name).filter(Boolean))].sort();
+  classSelect.innerHTML = '<option value="">-- اختر الفصل --</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
+  
+  document.getElementById('absenceStudentsList').innerHTML = '<p class="text-slate-400 text-center py-4">اختر الفصل أولاً</p>';
+  document.getElementById('absenceModal').classList.add('show');
+}
+
+function loadAbsenceStudents() {
+  const cls = document.getElementById('absenceClass').value;
+  const date = document.getElementById('absenceDate').value;
+  const container = document.getElementById('absenceStudentsList');
+  if (!cls) {
+    container.innerHTML = '<p class="text-slate-400 text-center py-4">اختر الفصل أولاً</p>';
+    return;
+  }
+  const list = students.filter(s => s.class_name === cls);
+  container.innerHTML = list.map(s => {
+    const idx = students.indexOf(s);
+    const isAbsent = (s.absences || []).some(a => a.date === date);
+    return `<label class="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded border-b dark:border-slate-700">
+      <input type="checkbox" class="absence-cb" data-index="${idx}" ${isAbsent ? 'checked' : ''}>
+      <span class="font-medium">${s.name || '-'}</span>
+      <span class="text-slate-400 text-[10px]">${s.student_id || ''}</span>
+    </label>`;
+  }).join('') || '<p class="text-center text-slate-400">لا يوجد طلاب في هذا الفصل</p>';
+}
+
+function saveAbsences() {
+  const date = document.getElementById('absenceDate').value;
+  if (!date) { alert('اختر التاريخ'); return; }
+  const dayName = new Date(date).toLocaleDateString('ar-SA', { weekday: 'long' });
+  
+  document.querySelectorAll('.absence-cb').forEach(cb => {
+    const idx = parseInt(cb.dataset.index);
+    if (isNaN(idx)) return;
+    if (!students[idx].absences) students[idx].absences = [];
+    
+    const exists = students[idx].absences.findIndex(a => a.date === date);
+    if (cb.checked) {
+      if (exists === -1) {
+        students[idx].absences.push({
+          date: date,
+          day: dayName,
+          recordedBy: currentUser?.fullname || 'الإداري',
+          time: new Date().toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit'})
+        });
+      }
+    } else {
+      if (exists >= 0) students[idx].absences.splice(exists, 1);
+    }
+  });
+  
+  // Backup absences separately so they don't get lost
+  const absBackup = {};
+  students.forEach(s => {
+    if (s.absences && s.absences.length > 0) {
+      const key = (s.student_id || s.name || '') + '';
+      absBackup[key] = s.absences;
+    }
+  });
+  localStorage.setItem('absences_backup', JSON.stringify(absBackup));
+
+  saveStudentsData();
+  alert('تم حفظ الغياب بنجاح');
+  closeModal('absenceModal');
+}
+
+function openAbsenceReport() {
+  document.getElementById('reportDateFilter').value = '';
+  renderAbsenceReport();
+  document.getElementById('absenceReportModal').classList.add('show');
+}
+
+function renderAbsenceReport() {
+  const filterDate = document.getElementById('reportDateFilter').value;
+  const content = document.getElementById('absenceReportContent');
+  
+  let absences = [];
+  students.forEach(s => {
+    (s.absences || []).forEach(a => {
+      if (!filterDate || a.date === filterDate) {
+        absences.push({
+          name: s.name,
+          class_name: s.class_name || '-',
+          date: a.date,
+          day: a.day || '',
+          recordedBy: a.recordedBy || ''
+        });
+      }
+    });
+  });
+  
+  if (absences.length === 0) {
+    content.innerHTML = '<p class="text-center text-slate-400 py-8">لا توجد سجلات غياب</p>';
+    return;
+  }
+  
+  // Group by class
+  const byClass = {};
+  absences.forEach(a => {
+    if (!byClass[a.class_name]) byClass[a.class_name] = [];
+    byClass[a.class_name].push(a);
+  });
+  
+  let html = '';
+  Object.keys(byClass).sort().forEach(cls => {
+    html += `<div class="mb-6">
+      <h4 class="font-bold text-blue-700 dark:text-blue-400 mb-2 bg-blue-50 dark:bg-blue-950/40 px-3 py-1 rounded">${cls} (${byClass[cls].length})</h4>
+      <table class="w-full text-xs border-collapse">
+        <thead class="bg-slate-100 dark:bg-slate-800">
+          <tr><th class="p-2 text-right">اسم الطالب</th><th class="p-2">التاريخ</th><th class="p-2">اليوم</th><th class="p-2">سجل بواسطة</th></tr>
+        </thead>
+        <tbody>
+          ${byClass[cls].map(a => `<tr class="border-b dark:border-slate-700">
+            <td class="p-2 font-medium">${a.name}</td>
+            <td class="p-2 text-center">${a.date}</td>
+            <td class="p-2 text-center">${a.day}</td>
+            <td class="p-2 text-center text-slate-500">${a.recordedBy}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  });
+  content.innerHTML = html;
+}
+
+
+// ===== Notify Absentees =====
+function openNotifyAbsentees() {
+  if (!currentUser || !['admin','vice','counselor','absence_officer'].includes(currentUser.role)) return;
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('notifyDate').value = today;
+  loadTodayAbsentees();
+  document.getElementById('notifyAbsenteesModal').classList.add('show');
+}
+
+function loadTodayAbsentees() {
+  const date = document.getElementById('notifyDate').value;
+  const container = document.getElementById('notifyAbsenteesList');
+  const absentees = [];
+  students.forEach((s, idx) => {
+    if ((s.absences || []).some(a => a.date === date)) {
+      const phone = String(s.guardian_phone || '').replace(/\D/g, '');
+      absentees.push({ idx, name: s.name, class_name: s.class_name, phone, hasPhone: phone.length >= 9 });
+    }
+  });
+
+  if (absentees.length === 0) {
+    container.innerHTML = '<p class="text-center text-slate-400 py-6">لا يوجد غائبون في هذا التاريخ</p>';
+    document.getElementById('notifySelectedCount').textContent = '0';
+    return;
+  }
+
+  container.innerHTML = absentees.map(a => `
+    <label class="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded border-b dark:border-slate-700 ${a.hasPhone ? '' : 'opacity-50'}">
+      <input type="checkbox" class="notify-cb" data-index="${a.idx}" ${a.hasPhone ? 'checked' : 'disabled'}>
+      <div class="flex-1 text-xs">
+        <div class="font-bold">${a.name || '-'}</div>
+        <div class="text-slate-500">${a.class_name || '-'} ${a.hasPhone ? '' : '- بلا جوال'}</div>
+      </div>
+    </label>
+  `).join('');
+
+  updateNotifyCount();
+  container.querySelectorAll('.notify-cb').forEach(cb => cb.addEventListener('change', updateNotifyCount));
+}
+
+function updateNotifyCount() {
+  const count = document.querySelectorAll('.notify-cb:checked').length;
+  document.getElementById('notifySelectedCount').textContent = count;
+}
+
+function sendNotifyBulk() {
+  const checked = document.querySelectorAll('.notify-cb:checked');
+  if (checked.length === 0) {
+    alert('لم يتم تحديد أي طالب');
+    return;
+  }
+
+  const msgTemplate = "السلام عليكم ، ولي أمر الطالب {student} ابنكم لم يحضر اليوم للمدرسه";
+  const links = [];
+
+  checked.forEach(cb => {
+    const idx = parseInt(cb.dataset.index);
+    if (isNaN(idx)) return;
+    const s = students[idx];
+    const phone = String(s.guardian_phone || '').replace(/\D/g, '');
+    if (phone.length < 9) return;
+
+    const msg = msgTemplate.replace('{student}', s.name || '');
+    const encoded = encodeURIComponent(msg);
+    links.push({
+      name: s.name,
+      phone,
+      url: `https://wa.me/${phone}?text=${encoded}`,
+      msg
+    });
+
+    // Log it
+    if (!s.logs) s.logs = [];
+    const now = new Date();
+    const dateStr = now.toLocaleString('ar-SA', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+    s.logs.push({
+      date: dateStr,
+      message: msg,
+      replied: false,
+      notes: 'إشعار غياب جماعي',
+      user: currentUser?.fullname || 'المسؤول'
+    });
+  });
+
+  if (links.length === 0) {
+    alert('لا يوجد أرقام جوال صالحة');
+    return;
+  }
+
+  saveStudentsData();
+
+  // Show ready links instead of auto-opening (avoids popup blocker)
+  const container = document.getElementById('notifyAbsenteesList');
+  container.innerHTML = `
+    <div class="mb-3 p-3 bg-emerald-50 dark:bg-emerald-950 rounded-lg text-xs">
+      <strong>تم تجهيز ${links.length} رسالة.</strong><br>
+      اضغط على كل زر لفتح واتساب وإرسال الرسالة يدوياً.
+    </div>
+    ${links.map((l, i) => `
+      <div class="flex items-center justify-between p-2 border-b dark:border-slate-700">
+        <div class="text-xs">
+          <div class="font-bold">${l.name}</div>
+          <div class="text-slate-500">${l.phone}</div>
+        </div>
+        <a href="${l.url}" target="_blank" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg">
+          إرسال ${i+1}
+        </a>
+      </div>
+    `).join('')}
+  `;
+
+  document.getElementById('notifySelectedCount').textContent = links.length;
+}
+
+
+// ===== Extra Features =====
+function checkTodayAbsencesAlert() {
+  if (!currentUser) return;
+  const today = new Date().toISOString().split('T')[0];
+  const count = students.filter(s => (s.absences || []).some(a => a.date === today)).length;
+  if (count > 0 && ['admin','vice','counselor','absence_officer'].includes(currentUser.role)) {
+    setTimeout(() => {
+      if (confirm(`تنبيه: يوجد ${count} طالب غائب اليوم.\nهل تريد فتح تقرير الغياب؟`)) {
+        openAbsenceReport();
+      }
+    }, 800);
+  }
+}
+
+function printAbsenceReport() {
+  const filterDate = document.getElementById('reportDateFilter').value;
+  const contentEl = document.getElementById('absenceReportContent');
+  const printWindow = window.open('', '_blank');
+  const dateLabel = filterDate || 'جميع التواريخ';
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>تقرير الغياب - مجمع يلملم</title>
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; padding: 30px; color: #1e293b; }
+        h1 { text-align: center; color: #1e40af; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #64748b; margin-bottom: 25px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: right; }
+        th { background: #1e40af; color: white; }
+        .class-header { background: #eff6ff; font-weight: bold; padding: 8px; margin-top: 15px; }
+      </style>
+    </head>
+    <body>
+      <h1>مجمع يلملم التعليمي</h1>
+      <div class="subtitle">تقرير الغياب الرسمي - ${dateLabel}</div>
+      ${contentEl.innerHTML}
+      <div style="display:flex; justify-content:space-around; margin-top:60px; text-align:center; font-size:14px;">
+        <div>
+          <p style="margin-bottom:40px; font-weight:bold;">مسؤول الغياب</p>
+          <p style="margin-top:30px; border-top:1px solid #000; width:140px; margin-left:auto; margin-right:auto;">التوقيع</p>
+        </div>
+        <div>
+          <p style="margin-bottom:40px; font-weight:bold;">وكيل الطلاب</p>
+          <p>أ. عبدالعزيز امبارك الفهمي</p>
+          <p style="margin-top:30px; border-top:1px solid #000; width:140px; margin-left:auto; margin-right:auto;">التوقيع</p>
+        </div>
+        <div>
+          <p style="margin-bottom:40px; font-weight:bold;">مدير المجمع</p>
+          <p>أ. محمد بن علي الفهمي</p>
+          <p style="margin-top:30px; border-top:1px solid #000; width:140px; margin-left:auto; margin-right:auto;">التوقيع</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => printWindow.print(), 400);
+}
+
+// Set print date
+document.addEventListener('DOMContentLoaded', () => {
+  const pd = document.getElementById('printDate');
+  if (pd) pd.textContent = new Date().toLocaleDateString('ar-SA');
+});
+
+</script>
+</body>
+</html>

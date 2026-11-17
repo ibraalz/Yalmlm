@@ -8,6 +8,14 @@ HTML
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نظام إدارة الطلاب والحسابات - مجمع يلملم التعليمي</title>
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi2YXYqtit2K8g2YrZhNmK2LXYqSDYp9mE2KjYp9mG2K8iLCJzaG9ydF9uYW1lIjoi2YXYqtit2K8g2YrZhNmK2LXYqSIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUIzYVdSMGFEb3ZMM2QzZHk1M015NWpiMjB2Y21Wc1pTNWpiMjB2Y0dGMGFHOXVaWEo0SUhCaGJtUnZiaTloY0hRZ1ptbHNaV0Z5WlhNdVkyOXQiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XSwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJzdGFydF91cmwiOiIvIiwidGhlbWVfY29sb3IiOiIjMWU0MGFmIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmOGZhZmMifQ==">
+<meta name="theme-color" content="#1e40af">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="يلملم">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/8074/8074788.png">
+<link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/8074/8074788.png">
+<meta name="theme-color" content="#1e40af">
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
@@ -83,9 +91,9 @@ HTML
     background: var(--card);
     border-left: 1px solid var(--border);
     position: fixed;
-    top: 0;
+    top: 88px;
     right: 0;
-    height: 100vh;
+    height: calc(100vh - 88px);
     overflow-y: auto;
     z-index: 50;
     transition: transform 0.3s ease;
@@ -116,7 +124,7 @@ HTML
   .main-content.expanded { margin-right: 0; }
   .sidebar-toggle {
     position: fixed;
-    top: 16px;
+    top: 100px;
     right: 16px;
     z-index: 60;
     background: var(--primary);
@@ -221,40 +229,18 @@ HTML
   <aside id="sidebar" class="sidebar no-print">
     <button class="sidebar-close-btn" onclick="toggleSidebar()">✕</button>
     <div class="sidebar-content">
+      <div class="text-center mb-6">
+        <img src="data:image/jpeg;base64,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uqmjipJ+tVNikwwlpB5jVjGfDOUE+i8C9QEREBERAREQEREBR15ppau01NNBG10kkZaNRwOKkUQVyqoLlLTUkcUcbWthdFMze6TkgAHUBnHDkML4pbdcGPtOqOL5pA6Jzg/PEgAHGB3cQrLhMIKvQ22609wiqZ44HfNnQvxNwJzkEN04A8Avujtdwp2WfVDF80a8SYcO0YGOCsuEwgq7bTcG0VNHuYtUdeah2H8NOXHhw58UdbbobtBUubA5sNU97falg0OBAwA3GelxJzkq0YTCCrm1XDcubuYtTrl611x1NWccuak7dS1NPc7hNLGxsc8jXNIdk8GgcfgpXCYQV1tuq2V9wqXW6CXfua6LVKOBaBjPDhxHYvia3XRs1we1sEra+nax+Xlm7eGlvDgeHFWXCYQVxtsuEU1FOyGBzo6R1NIwy4Azggg6ePLuWKktl0omW+VscEslNC6F8JlIBBIOoHHA8O5WhMIKvd7Zdq/eta2DTJC0ACQt0vDsnJxlw7s/BbsNJWxXaep3MWmpgY1wEvFrmg8OXHnzU2mEFXorRXUsdrl0tdJSMex8erm13aDjmvoWeriZBpa1zvlA1j2h2AwHPRHfz+9WbCYQVp1vuTGVboI4tUldv8GTi6PGCAcdF3iPisUVpuTKKmg3MXsa41BImJy3JPMjOeP2K1JhBEXW3z1E9JW0jmNqKRxLQ7qvaRggnsX2/wBerfYOh9WgdG5r3Fwc4kjAxjzznwUphMIK5T2mr3NrgnbG1tAcl7XZ3mG4AHnzOViZarg2jpItzHqir3VLumD0SXHu59L7FaMJhBUbhTVNLS1MssLfaXKKeMB2c8WjB7uX2rarLNU1sNdPqjgqakRaY85b0DkBxxxypuoo6arY1tTBFO1pyBI0Owfes7WhjNLfgEEBUWqpraqrqZWthfJRGmawu1ZJyck92V5SUtyZc4amSnga1tJuCBNkkg5z1fsViwmEFYorVXU7LO10LPmjnmVweOTgRw4cea+IrTdIqOkot3A9tNVCVsxlIL25J5aefHv7FasJhAC9REBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQf/Z" alt="شعار" class="w-16 h-16 mx-auto mb-2 rounded-xl bg-white/10 p-1 object-contain">
+      </div>
       <div class="text-center mb-6 pb-4 border-b dark:border-slate-700">
-        <div class="text-2xl mb-1">🏫</div>
-        <div class="font-bold text-sm">مجمع يلملم</div>
       </div>
 
+      <div class="px-3 mb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">الرئيسية</div>
       <button id="viewToggle" onclick="toggleView()" class="sidebar-item bg-slate-700 hover:bg-slate-800 text-white">
         📊 عرض جدول
       </button>
-      <button onclick="window.print()" class="sidebar-item bg-slate-600 hover:bg-slate-700 text-white">
-        🖨️ طباعة
-      </button>
-      <button onclick="exportCSV()" class="sidebar-item bg-emerald-700 hover:bg-emerald-800 text-white">
-        تصدير CSV
-      </button>
-      <button onclick="exportJSON()" class="sidebar-item bg-teal-700 hover:bg-teal-800 text-white">
-        تصدير JSON
-      </button>
 
-      <div class="my-4 border-t dark:border-slate-700"></div>
-
-      <button id="backupBtn" onclick="exportBackup()" class="sidebar-item hidden bg-amber-600 hover:bg-amber-700 text-white">
-        💾 حفظ نسخة احتياطية
-      </button>
-      <button id="restoreBtn" onclick="document.getElementById('importFile').click()" class="sidebar-item hidden bg-slate-700 hover:bg-slate-800 text-white">
-        📂 استعادة نسخة
-      </button>
-      <input type="file" id="importFile" accept=".json" class="hidden" onchange="importBackup(event)">
-
-      <button id="addStudentBtn" onclick="openAddModal()" class="sidebar-item hidden bg-blue-700 hover:bg-blue-800 text-white">
-        ➕ إضافة طالب جديد
-      </button>
-      <button id="bulkMsgBtn" onclick="openBulkModal()" class="sidebar-item hidden bg-emerald-700 hover:bg-emerald-800 text-white">
-        📢 رسالة جماعية
-      </button>
+      <div class="px-3 mt-4 mb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">الغياب</div>
       <button id="absenceBtn" onclick="openAbsenceModal()" class="sidebar-item hidden bg-red-600 hover:bg-red-700 text-white">
         📝 تسجيل الغياب
       </button>
@@ -264,11 +250,33 @@ HTML
       <button id="notifyAbsenteesBtn" onclick="openNotifyAbsentees()" class="sidebar-item hidden bg-pink-600 hover:bg-pink-700 text-white">
         📩 إشعار أولياء الغائبين
       </button>
+
+      <div class="px-3 mt-4 mb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">التواصل</div>
+      <button id="bulkMsgBtn" onclick="openBulkModal()" class="sidebar-item hidden bg-emerald-700 hover:bg-emerald-800 text-white">
+        📢 رسالة جماعية
+      </button>
       <button id="templatesBtn" onclick="openTemplatesModal()" class="sidebar-item hidden bg-indigo-600 hover:bg-indigo-700 text-white">
         📝 إدارة قوالب الرسائل
       </button>
+      <button onclick="filterNoPhone()" class="sidebar-item bg-amber-600 hover:bg-amber-700 text-white">
+        📵 بدون رقم تواصل
+      </button>
+
+      <div class="px-3 mt-4 mb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">أدوات</div>
+      <button onclick="openStatsModal()" class="sidebar-item bg-violet-600 hover:bg-violet-700 text-white">
+        📊 الإحصائيات
+      </button>
       <button onclick="openTimetableModal()" class="sidebar-item bg-cyan-600 hover:bg-cyan-700 text-white">
         📅 الجدول المدرسي
+      </button>
+      <button onclick="window.print()" class="sidebar-item bg-slate-600 hover:bg-slate-700 text-white">
+        🖨️ طباعة
+      </button>
+      <button onclick="exportCSV()" class="sidebar-item bg-emerald-700 hover:bg-emerald-800 text-white">
+        تصدير CSV
+      </button>
+      <button onclick="exportJSON()" class="sidebar-item bg-teal-700 hover:bg-teal-800 text-white">
+        تصدير JSON
       </button>
 
       <div class="my-4 border-t dark:border-slate-700"></div>
@@ -287,9 +295,7 @@ HTML
     <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-          <div class="bg-white/10 p-2 rounded-xl backdrop-blur-sm">
-            <span class="text-3xl">🏫</span>
-          </div>
+          <img src="data:image/jpeg;base64,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uqmjipJ+tVNikwwlpB5jVjGfDOUE+i8C9QEREBERAREQEREBR15ppau01NNBG10kkZaNRwOKkUQVyqoLlLTUkcUcbWthdFMze6TkgAHUBnHDkML4pbdcGPtOqOL5pA6Jzg/PEgAHGB3cQrLhMIKvQ22609wiqZ44HfNnQvxNwJzkEN04A8Avujtdwp2WfVDF80a8SYcO0YGOCsuEwgq7bTcG0VNHuYtUdeah2H8NOXHhw58UdbbobtBUubA5sNU97falg0OBAwA3GelxJzkq0YTCCrm1XDcubuYtTrl611x1NWccuak7dS1NPc7hNLGxsc8jXNIdk8GgcfgpXCYQV1tuq2V9wqXW6CXfua6LVKOBaBjPDhxHYvia3XRs1we1sEra+nax+Xlm7eGlvDgeHFWXCYQVxtsuEU1FOyGBzo6R1NIwy4Azggg6ePLuWKktl0omW+VscEslNC6F8JlIBBIOoHHA8O5WhMIKvd7Zdq/eta2DTJC0ACQt0vDsnJxlw7s/BbsNJWxXaep3MWmpgY1wEvFrmg8OXHnzU2mEFXorRXUsdrl0tdJSMex8erm13aDjmvoWeriZBpa1zvlA1j2h2AwHPRHfz+9WbCYQVp1vuTGVboI4tUldv8GTi6PGCAcdF3iPisUVpuTKKmg3MXsa41BImJy3JPMjOeP2K1JhBEXW3z1E9JW0jmNqKRxLQ7qvaRggnsX2/wBerfYOh9WgdG5r3Fwc4kjAxjzznwUphMIK5T2mr3NrgnbG1tAcl7XZ3mG4AHnzOViZarg2jpItzHqir3VLumD0SXHu59L7FaMJhBUbhTVNLS1MssLfaXKKeMB2c8WjB7uX2rarLNU1sNdPqjgqakRaY85b0DkBxxxypuoo6arY1tTBFO1pyBI0Owfes7WhjNLfgEEBUWqpraqrqZWthfJRGmawu1ZJyck92V5SUtyZc4amSnga1tJuCBNkkg5z1fsViwmEFYorVXU7LO10LPmjnmVweOTgRw4cea+IrTdIqOkot3A9tNVCVsxlIL25J5aefHv7FasJhAC9REBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQf/Z" alt="شعار المجمع" class="w-12 h-12 rounded-xl bg-white/10 p-1 object-contain">
           <div class="text-center md:text-right">
             <h1 class="text-lg sm:text-xl font-extrabold tracking-tight leading-tight">مجمع يلملم التعليمي</h1>
             <p class="text-[11px] sm:text-xs text-blue-200 mt-0.5">قاعدة بيانات الطلاب ونظام إدارة الصلاحيات</p>
@@ -374,11 +380,11 @@ HTML
         <div id="withPhone" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">0</div>
         <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">لديهم جوال ولي أمر</div>
       </div>
-      <div class="card-style rounded-xl p-4 text-center border-t-4 border-t-purple-600 shadow-sm">
+      <div onclick="openContactedList()" class="card-style rounded-xl p-4 text-center border-t-4 border-t-purple-600 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
         <div id="contacted" class="text-2xl font-black text-purple-600 dark:text-purple-400">0</div>
         <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">تم التواصل معهم</div>
       </div>
-      <div class="card-style rounded-xl p-4 text-center border-t-4 border-t-red-600 shadow-sm">
+      <div onclick="openTodayAbsentees()" class="card-style rounded-xl p-4 text-center border-t-4 border-t-red-600 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
         <div id="todayAbsences" class="text-2xl font-black text-red-600 dark:text-red-400">0</div>
         <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">غائبون اليوم</div>
       </div>
@@ -664,6 +670,43 @@ HTML
       </select>
     </div>
     <div id="timetableContent" class="overflow-x-auto text-xs"></div>
+  </div>
+</div>
+
+<!-- Today Absentees Modal -->
+<div class="modal" id="todayAbsenteesModal">
+  <div class="card-style rounded-2xl max-w-3xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
+      <h3 class="text-lg font-bold text-rose-600">🚫 غائبون اليوم</h3>
+      <div class="flex gap-2">
+        <button onclick="openAbsenceReport()" class="px-3 py-1.5 bg-orange-600 text-white text-xs font-bold rounded-lg">تقرير</button>
+        <button onclick="openNotifyAbsentees()" class="px-3 py-1.5 bg-pink-600 text-white text-xs font-bold rounded-lg">تواصل</button>
+        <button onclick="closeModal('todayAbsenteesModal')" class="px-3 py-1.5 bg-slate-500 text-white text-xs font-bold rounded-lg">إغلاق</button>
+      </div>
+    </div>
+    <div id="todayAbsenteesList" class="space-y-2 text-sm"></div>
+  </div>
+</div>
+
+<!-- Contacted List Modal -->
+<div class="modal" id="contactedModal">
+  <div class="card-style rounded-2xl max-w-3xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
+      <h3 class="text-lg font-bold text-teal-600">✅ تم التواصل معهم</h3>
+      <button onclick="closeModal('contactedModal')" class="px-3 py-1.5 bg-slate-500 text-white text-xs font-bold rounded-lg">إغلاق</button>
+    </div>
+    <div id="contactedList" class="space-y-2 text-sm"></div>
+  </div>
+</div>
+
+<!-- Statistics Modal -->
+<div class="modal" id="statsModal">
+  <div class="card-style rounded-2xl max-w-4xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4 pb-2 border-b dark:border-slate-700">
+      <h3 class="text-lg font-bold text-violet-600">📊 الإحصائيات الشاملة</h3>
+      <button onclick="closeModal('statsModal')" class="px-3 py-1.5 bg-slate-500 text-white text-xs font-bold rounded-lg">إغلاق</button>
+    </div>
+    <div id="statsContent" class="space-y-4 text-sm"></div>
   </div>
 </div>
 
@@ -1073,6 +1116,191 @@ function deleteTemplate(idx) {
   }
 }
 
+function openTodayAbsentees() {
+  const today = new Date().toISOString().split('T')[0];
+  const container = document.getElementById('todayAbsenteesList');
+  const absentees = students.filter(s => (s.absences || []).some(a => a.date === today));
+  
+  if (absentees.length === 0) {
+    container.innerHTML = '<p class="text-center text-slate-400 py-8">لا يوجد غائبون اليوم</p>';
+  } else {
+    container.innerHTML = absentees.map(s => `
+      <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+        <div>
+          <div class="font-bold">${s.name}</div>
+          <div class="text-xs text-slate-500">${s.class_name || '-'}</div>
+        </div>
+        <div class="text-xs text-slate-400">${s.guardian_phone || 'بلا جوال'}</div>
+      </div>
+    `).join('');
+  }
+  document.getElementById('todayAbsenteesModal').classList.add('show');
+}
+
+function openContactedList() {
+  const container = document.getElementById('contactedList');
+  const contacted = students.filter(s => s.logs && s.logs.length > 0)
+    .map(s => ({ name: s.name, class_name: s.class_name, count: s.logs.length }))
+    .sort((a, b) => b.count - a.count);
+  
+  if (contacted.length === 0) {
+    container.innerHTML = '<p class="text-center text-slate-400 py-8">لم يتم التواصل مع أي طالب بعد</p>';
+  } else {
+    container.innerHTML = contacted.map(s => `
+      <div class="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+        <div>
+          <div class="font-bold">${s.name}</div>
+          <div class="text-xs text-slate-500">${s.class_name || '-'}</div>
+        </div>
+        <div class="px-3 py-1 bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 text-xs font-bold rounded-full">
+          ${s.count} مرة
+        </div>
+      </div>
+    `).join('');
+  }
+  document.getElementById('contactedModal').classList.add('show');
+}
+
+function openStatsModal() {
+  const today = new Date().toISOString().split('T')[0];
+  const total = students.length;
+  const withPhone = students.filter(s => String(s.guardian_phone || '').replace(/\D/g, '').length >= 9).length;
+  const noPhone = total - withPhone;
+  
+  const todayAbs = students.filter(s => (s.absences || []).some(a => a.date === today)).length;
+  
+  const allAbsences = students.flatMap(s => s.absences || []);
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  const monthAbs = allAbsences.filter(a => a.date.startsWith(thisMonth)).length;
+  
+  const contacted = students.filter(s => s.logs && s.logs.length > 0).length;
+  const totalMessages = students.reduce((sum, s) => sum + (s.logs ? s.logs.length : 0), 0);
+  const excused = students.reduce((sum, s) => sum + (s.logs || []).filter(l => l.absenceType === 'excused').length, 0);
+  const emergency = students.reduce((sum, s) => sum + (s.logs || []).filter(l => l.absenceType === 'emergency').length, 0);
+  
+  // Class distribution
+  const classCounts = {};
+  students.forEach(s => {
+    const c = s.class_name || 'غير محدد';
+    classCounts[c] = (classCounts[c] || 0) + 1;
+  });
+  const classList = Object.entries(classCounts).sort((a,b) => b[1]-a[1]);
+
+  const content = document.getElementById('statsContent');
+  content.innerHTML = `
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="p-4 bg-blue-50 dark:bg-blue-950/40 rounded-xl text-center">
+        <div class="text-2xl font-black text-blue-600">${total}</div>
+        <div class="text-xs text-slate-500">إجمالي الطلاب</div>
+      </div>
+      <div class="p-4 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl text-center">
+        <div class="text-2xl font-black text-emerald-600">${withPhone}</div>
+        <div class="text-xs text-slate-500">لديهم جوال</div>
+      </div>
+      <div class="p-4 bg-amber-50 dark:bg-amber-950/40 rounded-xl text-center">
+        <div class="text-2xl font-black text-amber-600">${noPhone}</div>
+        <div class="text-xs text-slate-500">بدون جوال</div>
+      </div>
+      <div class="p-4 bg-red-50 dark:bg-red-950/40 rounded-xl text-center">
+        <div class="text-2xl font-black text-red-600">${todayAbs}</div>
+        <div class="text-xs text-slate-500">غائبون اليوم</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+      <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center">
+        <div class="text-xl font-black">${monthAbs}</div>
+        <div class="text-xs text-slate-500">غياب هذا الشهر</div>
+      </div>
+      <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center">
+        <div class="text-xl font-black">${totalMessages}</div>
+        <div class="text-xs text-slate-500">إجمالي الرسائل</div>
+      </div>
+      <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl text-center">
+        <div class="text-xl font-black">${contacted}</div>
+        <div class="text-xs text-slate-500">طلاب تم التواصل معهم</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 mt-4">
+      <div class="p-4 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl text-center">
+        <div class="text-xl font-black text-emerald-600">${excused}</div>
+        <div class="text-xs">غياب بعذر</div>
+      </div>
+      <div class="p-4 bg-orange-50 dark:bg-orange-950/40 rounded-xl text-center">
+        <div class="text-xl font-black text-orange-600">${emergency}</div>
+        <div class="text-xs">غياب اضطراري</div>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <h4 class="font-bold mb-2">توزيع الطلاب على الفصول</h4>
+      <div class="space-y-1">
+        ${classList.map(([name, count]) => `
+          <div class="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded">
+            <span>${name}</span>
+            <span class="font-bold text-blue-600">${count}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('statsModal').classList.add('show');
+}
+
+function filterNoPhone() {
+  document.getElementById('searchName').value = '';
+  document.getElementById('searchId').value = '';
+  document.getElementById('searchClass').value = '';
+  
+  const filtered = students.filter(s => {
+    const phone = String(s.guardian_phone || '').replace(/\D/g, '');
+    return phone.length < 9;
+  });
+  
+  document.getElementById('resultCount').textContent = filtered.length;
+  document.getElementById('totalCount').textContent = students.length;
+  
+  const container = document.getElementById('cardsView');
+  const tableBody = document.getElementById('tableBody');
+  const emptyMsg = document.getElementById('emptyMsg');
+  
+  if (filtered.length === 0) {
+    emptyMsg.classList.remove('hidden');
+    container.innerHTML = '';
+    tableBody.innerHTML = '';
+    return;
+  }
+  emptyMsg.classList.add('hidden');
+  
+  // Render filtered in current view
+  const isTable = document.getElementById('tableView').classList.contains('hidden') === false;
+  if (isTable) {
+    tableBody.innerHTML = filtered.map((s, idx) => `
+      <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+        <td class="p-3 font-bold">${s.name || '-'}</td>
+        <td class="p-3">${s.class_name || '-'}</td>
+        <td class="p-3">${s.student_id || '-'}</td>
+        <td class="p-3">${s.student_phone || '-'}</td>
+        <td class="p-3">${s.guardian || '-'}</td>
+        <td class="p-3 text-red-600 font-bold">${s.guardian_phone || 'بلا جوال'}</td>
+        <td class="p-3">${s.guardian_id || '-'}</td>
+        <td class="p-3 text-center">-</td>
+      </tr>
+    `).join('');
+  } else {
+    container.innerHTML = filtered.map(s => `
+      <div class="card-style rounded-xl p-4 text-sm">
+        <div class="font-bold text-base mb-1">${s.name || '-'}</div>
+        <div class="text-slate-500 text-xs mb-2">${s.class_name || '-'}</div>
+        <div class="text-xs"><span class="font-semibold">ولي الأمر:</span> ${s.guardian || '-'}</div>
+        <div class="text-xs text-red-600 font-bold mt-1">جوال ولي الأمر: ${s.guardian_phone || 'بلا جوال'}</div>
+      </div>
+    `).join('');
+  }
+}
+
 function openTimetableModal() {
   document.getElementById('timetableModal').classList.add('show');
   renderTimetable();
@@ -1132,6 +1360,81 @@ function renderTimetable() {
       { teacher: "راجح", periods: ["1م علوم", "1م نشاط", "3ث فيزياء", "مجتمع مهني", "", "1م علوم", "2ث فيزياء"] },
       { teacher: "مصطفى", periods: ["5ب فنية", "ن", "1م فنية", "3م فنية", "ن", "ن", "4ب فنية"] },
       { teacher: "محمد حسن", periods: ["3م انجليز", "اجتماع مهني", "1ث انجليز", "5ب انجليز", "", "", ""] }
+    ],
+    "الثلاثاء": [
+      { teacher: "عبدالمجيد", periods: ["", "4ب رياضيا", "6ب رياضيا", "", "مجتمع مهني", "ن", "4ب رياضيا"] },
+      { teacher: "محمد البركاتي", periods: ["ن", "ن", "2ث لغوية", "", "", "", "مجتمع مهني"] },
+      { teacher: "عبدالغفار", periods: ["1م لغتي", "3م لغتي", "2م لغتي", "", "", "", "مجتمع مهني"] },
+      { teacher: "صالح", periods: ["ن", "4ب دين", "ن", "ن", "ن", "4ب دين", ""] },
+      { teacher: "رائد", periods: ["", "3ث رياضيا", "مجتمع مهني", "ن", "1ث رياضيا", "2ث رياضيا", ""] },
+      { teacher: "علي الدعدي", periods: ["", "4ب لغتي", "", "ن", "6ب لغتي", "ن", "6ب لغتي"] },
+      { teacher: "احمد ردة", periods: ["ن", "5ب دين", "5ب لغتي", "ن", "ن", "مجتمع مهني", "5ب لغتي"] },
+      { teacher: "احمد علي", periods: ["", "", "", "1م دين", "ن", "3م دين", "1م دين"] },
+      { teacher: "زياد", periods: ["ن", "2م اجتماع", "5ب اجتماع", "3م اجتماع", "", "", ""] },
+      { teacher: "سعود", periods: ["", "", "", "6ب نشاط", "", "", "مجتمع مهني"] },
+      { teacher: "العيافي", periods: ["", "3ث انجليز", "مجتمع مهني", "6ب انجليز", "1م انجليز", "ن", "2م انجليز"] },
+      { teacher: "الادريسي", periods: ["", "", "", "1ث دين", "", "", ""] },
+      { teacher: "غلام", periods: ["2م رياضيا", "", "مجتمع مهني", "ن", "1م رياضيا", "3م رياضيا", "1م رياضيا"] },
+      { teacher: "إبراهيم", periods: ["", "", "", "4ب رقمية", "ن", "1ث رقمية", ""] },
+      { teacher: "محمد الفقيه", periods: ["", "", "", "", "", "", ""] },
+      { teacher: "يوسف", periods: ["ن", "5ب بدنية", "4ب علوم", "6ب علوم", "", "", ""] },
+      { teacher: "احمد الخيري", periods: ["", "", "", "مجتمع مهني", "3م علوم", "2م علوم", "ن"] },
+      { teacher: "ريان", periods: ["", "", "", "1م بدنية", "", "", "3ث بدنية"] },
+      { teacher: "هاشم", periods: ["", "", "", "مجتمع مهني", "2ث كيمياء", "ن", "1ث كيمياء"] },
+      { teacher: "مطر", periods: ["ن", "3ث ارض", "2ث احياء", "ن", "ن", "2ث نشاط", "ن"] },
+      { teacher: "راجح", periods: ["ن", "3ث فيزياء", "", "", "", "ن", "3ث فيزياء"] },
+      { teacher: "مصطفى", periods: ["", "", "3م مهارات", "", "", "", "1م مهارات"] },
+      { teacher: "محمد حسن", periods: ["3م انجليز", "", "مجتمع مهني", "2ث انجليز", "ن", "1ث انجليز", "5ب انجليز"] }
+    ],
+    "الأربعاء": [
+      { teacher: "عبدالمجيد", periods: ["5ب رياضيا", "ن", "4ب رياضيا", "5ب رياضيا", "6ب رياضيا", "", "", ""] },
+      { teacher: "محمد البركاتي", periods: ["2ث لغوية", "ن", "2ث لغوية", "1ث لغوية", "ن", "ن", ""] },
+      { teacher: "عبدالغفار", periods: ["2م لغتي", "ن", "2م لغتي", "ن", "1م لغتي", "1م لغتي", "3م لغتي"] },
+      { teacher: "صالح", periods: ["", "", "3م تفكير", "", "", "4ب دين", "4ب نشاط"] },
+      { teacher: "رائد", periods: ["", "مجتمع مهني", "1ث رياضيا", "2ث رياضيا", "", "", "1ث رياضيا"] },
+      { teacher: "علي الدعدي", periods: ["", "ن", "4ب لغتي", "ن", "", "6ب لغتي", "4ب لغتي"] },
+      { teacher: "احمد ردة", periods: ["", "", "5ب دين", "ن", "ن", "5ب دين", "5ب لغتي"] },
+      { teacher: "احمد علي", periods: ["ن", "1م دين", "", "مجتمع مهني", "3م دين", "ن", "2م دين"] },
+      { teacher: "زياد", periods: ["", "", "", "4ب اجتماع", "", "5ب اجتماع", "ن"] },
+      { teacher: "سعود", periods: ["", "6ب نشاط", "", "", "", "ن", "ن"] },
+      { teacher: "العيافي", periods: ["2م انجليز", "", "", "1م انجليز", "3ث انجليز", "ن", "1م انجليز"] },
+      { teacher: "الادريسي", periods: ["", "", "", "1ث دين", "", "مجتمع مهني", ""] },
+      { teacher: "غلام", periods: ["3م رياضيا", "1م رياضيا", "", "2م رياضيا", "3م رياضيا", "ن", ""] },
+      { teacher: "إبراهيم", periods: ["", "", "6ب رقمية", "2م رقمية", "", "ن", "1ث رقمية"] },
+      { teacher: "محمد الفقيه", periods: ["", "", "", "", "", "", ""] },
+      { teacher: "يوسف", periods: ["", "", "", "5ب بدنية", "", "ن", "5ب علوم"] },
+      { teacher: "احمد الخيري", periods: ["2م علوم", "ن", "", "3ث تنمية", "3م علوم", "ن", ""] },
+      { teacher: "ريان", periods: ["ن", "4ب بدنية", "ن", "2م بدنية", "4ب بدنية", "1ث بدنية", ""] },
+      { teacher: "هاشم", periods: ["ن", "3ث كيمياء", "ن", "6ب بدنية", "3ث نشاط", "", ""] },
+      { teacher: "مطر", periods: ["", "", "", "", "", "", ""] },
+      { teacher: "راجح", periods: ["", "", "ن", "3ث فيزياء", "2ث فيزياء", "", "2ث فيزياء"] },
+      { teacher: "مصطفى", periods: ["1م فنية", "3م فنية", "", "5ب مهارات", "ن", "6ب فنية", ""] },
+      { teacher: "محمد حسن", periods: ["2ث انجليز", "1ث انجليز", "3م انجليز", "", "", "", ""] }
+    ],
+    "الخميس": [
+      { teacher: "عبدالمجيد", periods: ["", "", "", "ن", "5ب رياضيا", "4ب رياضيا", "6ب رياضيا"] },
+      { teacher: "محمد البركاتي", periods: ["", "", "", "", "", "", ""] },
+      { teacher: "عبدالغفار", periods: ["ن", "", "", "", "", "", ""] },
+      { teacher: "صالح", periods: ["", "", "", "", "", "", ""] },
+      { teacher: "رائد", periods: ["", "", "3ث رياضيا", "ن", "2ث رياضيا", "", ""] },
+      { teacher: "علي الدعدي", periods: ["", "", "", "", "", "", ""] },
+      { teacher: "احمد ردة", periods: ["", "", "", "", "", "", ""] },
+      { teacher: "احمد علي", periods: ["ن", "2م دين", "2م دين", "3م تفكير", "", "", ""] },
+      { teacher: "زياد", periods: ["6ب اجتماع", "2م اجتماع", "", "", "2ث تاريخ", "ن", "1م اجتماع"] },
+      { teacher: "سعود", periods: ["1ث تفكير", "ن", "", "", "", "", ""] },
+      { teacher: "العيافي", periods: ["", "4ب انجليز", "6ب انجليز", "3ث انجليز", "", "", "2م انجليز"] },
+      { teacher: "الادريسي", periods: ["", "", "", "", "", "", ""] },
+      { teacher: "غلام", periods: ["3م رياضيا", "1م رياضيا", "2م رياضيا", "", "", "", ""] },
+      { teacher: "إبراهيم", periods: ["3ث رقمية", "", "", "1ث رقمية", "", "1م رقمية", "3م رقمية"] },
+      { teacher: "محمد الفقيه", periods: ["", "", "", "", "", "ن", "ن"] },
+      { teacher: "يوسف", periods: ["4ب علوم", "", "", "", "", "6ب علوم", "ن"] },
+      { teacher: "احمد الخيري", periods: ["", "", "", "3ث تنمية", "", "", "3م علوم"] },
+      { teacher: "ريان", periods: ["", "", "", "ن", "2م نشاط", "3ث بدنية", "2م بدنية"] },
+      { teacher: "هاشم", periods: ["", "", "", "", "", "1ث كيمياء", "2ث كيمياء"] },
+      { teacher: "مطر", periods: ["", "", "", "", "", "1ث احياء", "2ث احياء"] },
+      { teacher: "راجح", periods: ["3ث فيزياء", "1م علوم", "", "", "", "", ""] },
+      { teacher: "مصطفى", periods: ["", "", "", "", "", "", ""] },
+      { teacher: "محمد حسن", periods: ["2ث انجليز", "ن", "5ب انجليز", "1ث انجليز", "", "", ""] }
     ]
   };
 
@@ -1316,12 +1619,8 @@ function saveUsersData() {
 
 function fillLogin(username, password) {
   document.getElementById('loginUsername').value = username;
-  document.getElementById('loginPassword').value = password;
-  // تسجيل دخول تلقائي للتجربة السريعة
-  setTimeout(() => {
-    const form = document.querySelector('#loginScreen form');
-    if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-  }, 100);
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginPassword').focus();
 }
 
 function handleLogin(event) {
@@ -1742,18 +2041,36 @@ function renderLogs() {
           <span class="text-[10px] text-slate-400">بواسطة: ${log.user || 'المسؤول'}</span>
         </div>
         <p class="mb-2"><strong>الرسالة:</strong> ${log.message}</p>
-        <div class="flex items-center gap-2 mb-2">
+        <div class="flex items-center gap-2 mb-2 flex-wrap">
           ${canEditLog ? `
-            <button class="px-2 py-1 rounded text-[11px] font-bold ${log.replied ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-700'}" onclick="toggleReplied(${realIdx}, true)">تم الرد ✓</button>
-            <button class="px-2 py-1 rounded text-[11px] font-bold ${!log.replied ? 'bg-red-600 text-white' : 'bg-slate-200 dark:bg-slate-700'}" onclick="toggleReplied(${realIdx}, false)">لم يتم الرد</button>
+            <button class="px-2 py-1 rounded text-[11px] font-bold ${log.absenceType === 'excused' ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-700'}" onclick="setAbsenceType(${realIdx}, 'excused')">غياب بعذر</button>
+            <button class="px-2 py-1 rounded text-[11px] font-bold ${log.absenceType === 'emergency' ? 'bg-orange-600 text-white' : 'bg-slate-200 dark:bg-slate-700'}" onclick="setAbsenceType(${realIdx}, 'emergency')">غياب اضطراري (أخرى)</button>
+            <button class="px-2 py-1 rounded text-[11px] font-bold ${!log.replied && !log.absenceType ? 'bg-red-600 text-white' : 'bg-slate-200 dark:bg-slate-700'}" onclick="setAbsenceType(${realIdx}, null)">لم يتم الرد</button>
           ` : `
-            <span class="font-bold ${log.replied ? 'text-emerald-600' : 'text-red-600'}">${log.replied ? 'تم الرد' : 'لم يتم الرد'}</span>
+            <span class="font-bold ${log.absenceType === 'excused' ? 'text-emerald-600' : log.absenceType === 'emergency' ? 'text-orange-600' : 'text-red-600'}">
+              ${log.absenceType === 'excused' ? 'غياب بعذر' : log.absenceType === 'emergency' ? 'غياب اضطراري (أخرى)' : 'لم يتم الرد'}
+            </span>
           `}
         </div>
         <textarea ${!canEditLog ? 'disabled' : ''} placeholder="إضافة ملاحظات ولي الأمر..." class="w-full p-2 rounded border dark:bg-slate-800 dark:border-slate-700 text-xs" onchange="updateNotes(${realIdx}, this.value)">${log.notes || ''}</textarea>
       </div>
     `;
   }).join('');
+}
+
+function setAbsenceType(logIndex, type) {
+  if (currentUser?.role === 'teacher') return;
+  const s = students[currentLogIndex];
+  if (!s.logs[logIndex]) return;
+  s.logs[logIndex].absenceType = type;
+  s.logs[logIndex].replied = type !== null;
+  if (type === 'excused') {
+    s.logs[logIndex].notes = 'غياب بعذر';
+  } else {
+    s.logs[logIndex].notes = '';
+  }
+  saveStudentsData();
+  renderLogs();
 }
 
 function toggleReplied(logIndex, setTo) {
@@ -2337,6 +2654,23 @@ function updateNotifyCount() {
   document.getElementById('notifySelectedCount').textContent = count;
 }
 
+function sendNextNotify() {
+  if (!window.notifyLinks || window.currentNotifyIndex >= window.notifyLinks.length) {
+    alert('تم إرسال جميع الرسائل');
+    return;
+  }
+  const link = window.notifyLinks[window.currentNotifyIndex];
+  window.open(link.url, '_blank');
+  window.currentNotifyIndex++;
+  
+  const btn = document.querySelector('button[onclick="sendNextNotify()"]');
+  if (btn) {
+    const remaining = window.notifyLinks.length - window.currentNotifyIndex;
+    btn.textContent = remaining > 0 ? `إرسال التالي (${remaining} متبقي)` : 'تم الإرسال';
+    if (remaining === 0) btn.disabled = true;
+  }
+}
+
 function sendNotifyBulk() {
   const checked = document.querySelectorAll('.notify-cb:checked');
   if (checked.length === 0) {
@@ -2344,7 +2678,20 @@ function sendNotifyBulk() {
     return;
   }
 
-  const msgTemplate = "السلام عليكم ، ولي أمر الطالب {student} ابنكم لم يحضر اليوم للمدرسه";
+  const msgTemplate = `السلام عليكم ورحمة الله وبركاته
+
+ولي أمر الطالب: {student}
+الفصل: {class}
+
+نود إعلامكم بأن ابنكم تغيب اليوم عن المدرسة.
+
+يرجى الرد باختيار أحد الخيارين:
+
+1️⃣ غياب بعذر
+2️⃣ غياب اضطراري
+
+شكراً لتعاونكم
+مجمع يلملم التعليمي`;
   const links = [];
 
   checked.forEach(cb => {
@@ -2354,7 +2701,9 @@ function sendNotifyBulk() {
     const phone = String(s.guardian_phone || '').replace(/\D/g, '');
     if (phone.length < 9) return;
 
-    const msg = msgTemplate.replace('{student}', s.name || '');
+    const msg = msgTemplate
+      .replace('{student}', s.name || '')
+      .replace('{class}', s.class_name || '-');
     const encoded = encodeURIComponent(msg);
     links.push({
       name: s.name,
@@ -2388,20 +2737,31 @@ function sendNotifyBulk() {
   container.innerHTML = `
     <div class="mb-3 p-3 bg-emerald-50 dark:bg-emerald-950 rounded-lg text-xs">
       <strong>تم تجهيز ${links.length} رسالة.</strong><br>
-      اضغط على كل زر لفتح واتساب وإرسال الرسالة يدوياً.
+      اضغط "إرسال التالي" لإرسال الرسائل واحدة تلو الأخرى بسرعة.
     </div>
-    ${links.map((l, i) => `
-      <div class="flex items-center justify-between p-2 border-b dark:border-slate-700">
-        <div class="text-xs">
-          <div class="font-bold">${l.name}</div>
-          <div class="text-slate-500">${l.phone}</div>
+    <div class="mb-3 text-center">
+      <button onclick="sendNextNotify()" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-sm">
+        إرسال التالي (${links.length} متبقي)
+      </button>
+    </div>
+    <div id="notifyLinksContainer">
+      ${links.map((l, i) => `
+        <div class="flex items-center justify-between p-2 border-b dark:border-slate-700 notify-link-item" data-index="${i}">
+          <div class="text-xs">
+            <div class="font-bold">${l.name}</div>
+            <div class="text-slate-500">${l.phone}</div>
+          </div>
+          <a href="${l.url}" target="_blank" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg">
+            إرسال
+          </a>
         </div>
-        <a href="${l.url}" target="_blank" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg">
-          إرسال ${i+1}
-        </a>
-      </div>
-    `).join('')}
+      `).join('')}
+    </div>
   `;
+
+  // Store links globally for sequential sending
+  window.notifyLinks = links;
+  window.currentNotifyIndex = 0;
 
   document.getElementById('notifySelectedCount').textContent = links.length;
 }
@@ -2469,6 +2829,50 @@ function printAbsenceReport() {
   printWindow.focus();
   setTimeout(() => printWindow.print(), 400);
 }
+
+// Bell for end of periods
+function startPeriodBell() {
+  const periods = [
+    { end: "08:15" },
+    { end: "09:00" },
+    { end: "09:45" },
+    { end: "10:55" },
+    { end: "11:40" },
+    { end: "12:25" }
+  ];
+
+  setInterval(() => {
+    const now = new Date();
+    const currentTime = now.toTimeString().slice(0, 5);
+    
+    periods.forEach(p => {
+      if (currentTime === p.end) {
+        playBell();
+      }
+    });
+  }, 10000);
+}
+
+function playBell() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    
+    oscillator.start();
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 2);
+    oscillator.stop(audioCtx.currentTime + 2);
+  } catch (e) {}
+}
+
+startPeriodBell();
 
 // Set print date
 document.addEventListener('DOMContentLoaded', () => {

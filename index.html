@@ -1530,8 +1530,19 @@ async function fetchCloudStudentsData() {
     const res = await fetch(API_URL);
     const data = await res.json();
     if (Array.isArray(data) && data.length > 0) {
+      // Extract special entries
+      const usersEntry = data.find(s => s.name === '__USERS__');
+      if (usersEntry && usersEntry.guardian) {
+        try {
+          const cloudUsers = JSON.parse(usersEntry.guardian);
+          if (Array.isArray(cloudUsers) && cloudUsers.length > 0) {
+            users = cloudUsers;
+            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+          }
+        } catch(e) {}
+      }
       // Extract templates if present
-      const cleaned = extractTemplatesFromStudents(data);
+      const cleaned = extractTemplatesFromStudents(data.filter(s => !['__USERS__'].includes(s.name)));
       // Always merge local absences backup (prefer local if cloud is empty or missing)
       const localAbs = JSON.parse(localStorage.getItem('absences_backup') || '{}');
       students = cleaned.map(s => {
@@ -1603,7 +1614,17 @@ async function saveStudentsData() {
       logs: [],
       absences: []
     };
-    const toSave = [...students.filter(s => !['__TEMPLATES__','__ABSENCES__'].includes(s.name)), templatesEntry, absencesEntry];
+    const toSave = [...students.filter(s => !['__TEMPLATES__','__ABSENCES__','__USERS__'].includes(s.name)), templatesEntry, absencesEntry, {
+      name: '__USERS__',
+      class_name: '__SYSTEM__',
+      student_id: 'users',
+      student_phone: '',
+      guardian: JSON.stringify(users),
+      guardian_phone: '',
+      guardian_id: '',
+      logs: [],
+      absences: []
+    }];
     await fetch(API_URL, {
       method: 'POST',
       mode: 'no-cors',
@@ -1615,6 +1636,8 @@ async function saveStudentsData() {
 
 function saveUsersData() {
   localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+  // Sync to cloud as well
+  saveStudentsData();
 }
 
 function fillLogin(username, password) {
